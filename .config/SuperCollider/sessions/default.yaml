@@ -1,24 +1,14 @@
 documents: !QVariantList
-  - /home/jms/git/wtkns/supercollider/.config/SuperCollider/startup.scd
-  - /home/jms/dotfiles/git/.gitconfig
-  - /home/jms/dotfiles/git/_gitconfig
+  []
 editors: !QVariantMap
   elements: !QVariantList
     - !QVariantList
-      - !QVariantMap
-        documentIndex: 0
-        position: 0
-      - !QVariantMap
-        documentIndex: 1
-        position: 0
-      - !QVariantMap
-        documentIndex: 2
-        position: 0
+      []
   state: AAAA/wAAAAEAAAABAAAAZAH/////AQAAAAEA
 mainWindow:
   detached: !QVariantMap
     documents-dock: ""
     help-dock: ""
     post-dock: ""
-  geometry: AdnQywADAAAAAADIAAABCQAACbgAAAaNAAAAyAAAAS4AAAm4AAAGjQAAAAAAAAAACgAAAADIAAABLgAACbgAAAaN
-  state: AAAA/wAAAAD9AAAAAgAAAAAAAAAAAAAAAPwCAAAAAfsAAAAcAGQAbwBjAHUAbQBlAG4AdABzAC0AZABvAGMAawAAAAAA/////wAAAGEA////AAAAAQAAAaAAAAUr/AIAAAAC+wAAABIAaABlAGwAcAAtAGQAbwBjAGsBAAAAGAAAAuQAAABPAP////sAAAASAHAAbwBzAHQALQBkAG8AYwBrAQAAAv0AAAJGAAAATwD///8AAAdQAAAFKwAAAAEAAAACAAAAAQAAAAL8AAAAAA==
+  geometry: AdnQywADAAAAAABjAAAAPQAACVMAAAXBAAAAYwAAAGIAAAlTAAAFwQAAAAAAAAAACgAAAABjAAAAYgAACVMAAAXB
+  state: AAAA/wAAAAD9AAAAAgAAAAAAAAAAAAAAAPwCAAAAAfsAAAAcAGQAbwBjAHUAbQBlAG4AdABzAC0AZABvAGMAawAAAAAA/////wAAAGEA////AAAAAQAABEYAAAUr/AIAAAAC+wAAABIAaABlAGwAcAAtAGQAbwBjAGsBAAAAGAAAAuQAAABPAP////sAAAASAHAAbwBzAHQALQBkAG8AYwBrAQAAAv0AAAJGAAAATwD///8AAASqAAAFKwAAAAEAAAACAAAAAQAAAAL8AAAAAA==

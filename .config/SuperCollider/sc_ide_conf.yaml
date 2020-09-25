@@ -26,20 +26,13 @@ IDE:
       documents-dock: ""
       help-dock: ""
       post-dock: ""
-    geometry: AdnQywADAAAAAADIAAABCQAACbgAAAaNAAAAyAAAAS4AAAm4AAAGjQAAAAAAAAAACgAAAADIAAABLgAACbgAAAaN
-    state: AAAA/wAAAAD9AAAAAgAAAAAAAAAAAAAAAPwCAAAAAfsAAAAcAGQAbwBjAHUAbQBlAG4AdABzAC0AZABvAGMAawAAAAAA/////wAAAGEA////AAAAAQAAAaAAAAUr/AIAAAAC+wAAABIAaABlAGwAcAAtAGQAbwBjAGsBAAAAGAAAAuQAAABPAP////sAAAASAHAAbwBzAHQALQBkAG8AYwBrAQAAAv0AAAJGAAAATwD///8AAAdQAAAFKwAAAAEAAAACAAAAAQAAAAL8AAAAAA==
+    geometry: AdnQywADAAAAAABjAAAAPQAACVMAAAXBAAAAYwAAAGIAAAlTAAAFwQAAAAAAAAAACgAAAABjAAAAYgAACVMAAAXB
+    state: AAAA/wAAAAD9AAAAAgAAAAAAAAAAAAAAAPwCAAAAAfsAAAAcAGQAbwBjAHUAbQBlAG4AdABzAC0AZABvAGMAawAAAAAA/////wAAAGEA////AAAAAQAABEYAAAUr/AIAAAAC+wAAABIAaABlAGwAcAAtAGQAbwBjAGsBAAAAGAAAAuQAAABPAP////sAAAASAHAAbwBzAHQALQBkAG8AYwBrAQAAAv0AAAJGAAAATwD///8AAASqAAAFKwAAAAEAAAACAAAAAQAAAAL8AAAAAA==
   postWindow:
     lineWrap: false
     scrollback: 1000
   recentDocuments: !QVariantList
-    - /home/jms/dotfiles/git/_gitconfig
-    - /home/jms/dotfiles/git/.gitconfig
+    - /home/jms/.local/share/SuperCollider/downloaded-quarks/redUniverse/redUniverse.quark
+    - /home/jms/git/wtkns/supercollider/visuals/wavePhaseTest.scd
     - /home/jms/git/wtkns/supercollider/.config/SuperCollider/startup.scd
-    - /home/jms/git/wtkns/supercollider/mesh/ignore/pstreams.scd
-    - /home/jms/git/wtkns/supercollider/mesh/devNotes.scd
-    - /home/jms/git/wtkns/supercollider/mesh/ignore/tabWinSamp1.scd
-    - /home/jms/dotfiles/notes/supercollider.org
-    - /home/jms/dotfiles/notes/kb.txt
-    - /home/jms/dotfiles/notes/journal/2014/November/2014-11-28.org
-    - /home/jms/git/wtkns/supercollider/results.txt
   startWithSession: last

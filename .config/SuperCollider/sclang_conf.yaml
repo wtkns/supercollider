@@ -1,6 +1,5 @@
 includePaths:
     -   /home/jms/.local/share/SuperCollider/downloaded-quarks/redUniverse
-    -   /home/jms/git/wtkns/supercollider/snaileyes
 excludePaths:
     []
 postInlineWarnings: false
