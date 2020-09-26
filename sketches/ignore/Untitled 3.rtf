@@ -1,0 +1,98 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf230
+{\fonttbl\f0\fnil\fcharset0 Candara;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue191;\red0\green115\blue0;\red191\green0\blue0;
+}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs44 \cf0 (\
+\cf2 Server\cf0 .default = s = \cf2 Server\cf0 .internal.boot;\
+\
+s.waitForBoot(\{\
+	\cf2 Routine\cf0 .run(\{\
+				\
+		\cf2 var\cf0  data, sd;\
+		\cf2 var\cf0  routFunction, routine1, routine2, routine3;\
+		\cf2 var\cf0  do, re, mi, fa, sol, la, ti, hiDo, hiRe, hiMi, hiFa, hiSol, hiLa, hiTi, loDo, loRe, loMi, loFa, loSol, loLa, loTi;\
+			loDo = \cf2 PitchClass\cf0 (\cf3 \\g\cf0 , 3); loRe = \cf2 PitchClass\cf0 (\cf3 \\a\cf0 , 3);\
+			loMi = \cf2 PitchClass\cf0 (\cf3 \\b\cf0 , 3); loFa = \cf2 PitchClass\cf0 (\cf3 \\c\cf0 , 3);\
+			loSol = \cf2 PitchClass\cf0 (\cf3 \\d\cf0 , 4); loLa = \cf2 PitchClass\cf0 (\cf3 \\e\cf0 , 4);\
+			loTi = \cf2 PitchClass\cf0 (\cf3 \\fs\cf0 , 4); do = \cf2 PitchClass\cf0 (\cf3 \\g\cf0 , 4);\
+			re = \cf2 PitchClass\cf0 (\cf3 \\a\cf0 , 4); mi = \cf2 PitchClass\cf0 (\cf3 \\b\cf0 , 4);\
+			fa = \cf2 PitchClass\cf0 (\cf3 \\c\cf0 , 5); sol = \cf2 PitchClass\cf0 (\cf3 \\d\cf0 , 5);\
+			la = \cf2 PitchClass\cf0 (\cf3 \\e\cf0 , 5); ti = \cf2 PitchClass\cf0 (\cf3 \\fs\cf0 , 5);\
+			hiDo = \cf2 PitchClass\cf0 (\cf3 \\g\cf0 , 5); hiRe = \cf2 PitchClass\cf0 (\cf3 \\a\cf0 , 5);\
+			hiMi = \cf2 PitchClass\cf0 (\cf3 \\b\cf0 , 5); hiFa = \cf2 PitchClass\cf0 (\cf3 \\c\cf0 , 6);\
+			hiSol = \cf2 PitchClass\cf0 (\cf3 \\d\cf0 , 6); hiLa = \cf2 PitchClass\cf0 (\cf3 \\e\cf0 , 6); hiTi = \cf2 PitchClass\cf0 (\cf3 \\fs\cf0 , 6);\
+		\
+		sd = \cf2 CtkSynthDef\cf0 (\cf3 \\note\cf0 , \{\cf2 arg\cf0  freq, amp, dur;\
+			\cf2 var\cf0  env;\
+			env = \cf2 EnvGen\cf0 .kr(\
+				\cf2 Env\cf0 ([0, 1, 1, 0], [0.1, 0.8, 0.1], \cf3 \\sin\cf0 ), \
+				timeScale: dur);\
+			\cf2 Out\cf0 .ar(0, \cf2 Pan2\cf0 .ar(\
+				\cf2 SinOsc\cf0 .ar(freq, 0, amp) * env\
+				)\
+			)\
+		\});\
+		\
+		data = [\
+		[hiDo, 0.5, 0.3], [hiDo, 0.5, 0.3], \
+		[ti, 0.5, 0.3], [ti, 0.5, 0.3], \
+		[la, 0.5, 0.3], [la, 0.5, 0.3], \
+		[sol, 0.5, 0.3], [sol, 0.5, 0.3], \
+		[fa, 0.25, 0.35], [mi, 0.25, 0.35], [fa, 0.25, 0.35], [sol, 0.25, 0.35], \
+		[mi, 0.25, 0.35], [fa, 0.25, 0.35], [sol, 0.25, 0.35], [la, 0.25, 0.25],\
+		[sol, 0.25, 0.35], [fa, 0.25, 0.35], [mi, 0.25, 0.35], [re, 0.25, 0.25], \
+		[do, 2.0, 2.1], [mi, 0.5, 0.5],\
+		\
+		[do, 0.25, 0.35], [re, 0.25, 0.35], [mi, 0.25, 0.35], [fa, 0.25, 0.25],\
+		[sol, 0.5, 0.3], [mi, 0.5, 0.3],\
+		[fa, 0.5, 0.3], [re, 0.5, 0.3],\
+		[sol, 0.5, 0.55], [mi, 0.5, 0.5],\
+		[re, 0.25, 0.35], [loSol, 0.25, 0.35], [loLa, 0.25, 0.35], [loTi, 0.25, 0.35], \
+		[do, 0.25, 0.35], [re, 0.25, 0.35], [mi, 0.25, 0.35], [fa, 0.25, 0.25],\
+		[sol, 0.5, 0.5], [hiSol, 0.5, 0.5],\
+		[hiMi, 2.0, 2.1], [hiDo, 0.25, 0.35],[hiRe, 0.25, 0.35],\
+		\
+		[hiMi, 0.25, 0.35], [hiFa, 0.25, 0.35], [hiSol, 0.25, 0.35], [hiLa, 0.25, 0.25],\
+		[hiRe, 0.5, 0.3], [hiSol, 0.5, 0.3],\
+		[hiDo, 0.25, 0.35],\
+		[hiFa, 0.5, 0.3],[hiMi, 0.5, 0.3],\
+		[la, 0.25, 0.35],\
+		[hiRe, 0.5, 0.5],\
+		[hiDo, 0.25, 0.35],[hiDo, 0.25, 0.35],[ti, 0.25, 0.35],\
+		[hiDo, 2.0, 2.1], [sol, 0.5, 0.5]\
+		];\
+		\
+		\
+		routFunction = \{\
+			var routine;\
+			routine = \cf2 Routine\cf0 (\{\
+				data.do(\{\cf2 arg\cf0  eachNote, i;\
+					\cf2 var\cf0  pc, noteFreq, noteDur, noteArtic;\
+					\cf4 // noteDur is duration in meter\cf0 \
+					\cf4 // noteArtic is actual duration due to staccatos and slurs\cf0 \
+					#pc, noteDur, noteArtic = eachNote;\
+					noteFreq = pc.freq;\
+					[noteFreq.round(0.1), noteDur, noteArtic].postln; \cf4 // for reference\cf0 \
+					sd.note(0.2, noteDur).freq_(noteFreq).dur_(noteArtic).amp_(0.3).play;\
+					noteDur.wait;\
+				\})\
+			\});\
+			routine;\
+		\};\
+		\
+		routine1 = routFunction.();\
+		routine2 = routFunction.();\
+		routine3 = routFunction.();\
+		\
+		\cf2 Routine\cf0 .run(\{\
+					routine1.play;\
+					8.wait;\
+					routine2.play;\
+					16.wait;\
+					routine3.play;\
+		\})\
+	\})\
+\})				\
+)}

@@ -1,0 +1,803 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf320
+{\fonttbl\f0\fnil\fcharset0 Monaco;\f1\froman\fcharset0 Times-Roman;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red191\green0\blue0;\red0\green0\blue191;
+\red0\green115\blue0;\red96\green96\blue96;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs18 \cf2 \
+\cf3 //Oh, hi, um, here is my final piece. In this brief and humble work, I wanted to place a bit more emphasis on timbre than I had in my midterm piece, so I took quite a bit of time finding the exact sounds I wanted to use. In addition, I wanted to have a clear structure in place prior to actually laying my instruments out in time...something I kind of jumped the gun with before. The "seed," so to speak, of this piece, is a rhythmic pattern reminiscent of an Indian tala pattern. Based on the series of numbers 2 2 3 2 4 3 2, a rhythmic motif of sorts is generated and remains prevalent throughout the piece either in its full form or in fragments. This pattern becomes compressed in time as the work progresses. This numerical series was also used to generate pitch material. Using the base unit of a half step and starting from C, one can derive the sequence of notes C D E G A C# E F#. These notes were then permuted in various ways to bear loose resemblence to the natural overtone series, in effect creating a few unique inharmonic spectra. Enough chitchat. Let's listen.//\cf2 \
+\
+\
+\cf3 //THIS WEEK ONLY, VARIABLE SPECIAL--BUY ONE, GET THIRTY SOME-ODD FREE!!//\cf2 \
+\
+(\
+\cf4 var\cf2  score, talaArray;\
+\cf4 var\cf2  bassThud, bassThudBuffer, part1TimeArray, bassThudFunc;\
+\cf4 var\cf2  thudOvertone, thudOvertone1Buffer,  thudOvertone2Buffer, thudOvertone3Buffer, thudOvertone4Buffer, overtoneTimeArray, thudOvertoneFunc;\
+\cf4 var\cf2  thudJingle, thudJingleTimeArray, thudJingleFunc; \
+\cf4 var\cf2  part1LowDrone, part1LowDroneFunc, droneFreqBuffer, droneModIndexBuffer;\
+\cf4 var\cf2  leadSustain, leadTimeArray, leadFreqArray, leadAmpArray; \
+\cf4 var\cf2  lead1FreqMultArray, leadSustain1Func, leadSustain1FuncShort, leadSustain1FuncShorter, leadTimeArrayShorter;\
+\cf4 var\cf2  lead2FreqMultArray, leadSustain2Func, leadSustain2FuncShort;\
+\cf4 var\cf2  lead3FreqMultArray, leadSustain3Func;\
+\cf4 var\cf2  lead4FreqMultArray, leadSustain4FuncShort;\
+\
+\cf3 //From Section 2//\cf2 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\ql\qnatural\pardirnatural
+\cf4 var\cf2  rotatedTalaArray, part2TimeArray;\
+\cf4 var\cf2  thudJingleFuncSection2;\
+\cf4 var\cf2  overtoneTimeArrayPart2;\
+\cf4 var\cf2  leadPercussive, leadPercussiveFunc, leadPercussiveFreqTimeArray;\
+\cf4 var\cf2  leadSustainSection2, leadSustainFuncSection2, leadSustainFreqTimeArray; \
+\cf4 var\cf2  grainCloud, bufferGrainEnv, spectAmpArray, grainCloud1Func, grainCloud2Func;\
+\cf4 var\cf2  wubbaBuffer, wubba, wubbaFunc;\
+\cf4 var\cf2  grainShot, bufferGrainShot;\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf2 \
+\cf3 //leadSustain1FuncShort means the second time the melodic pattern repeats. Shorter by factor of 0.64; similarly, leadSustain1FuncShorter is shorter by factor of 0.4096//\cf2 \
+\
+\
+score = \cf4 CtkScore\cf2 .new;\
+\
+\cf3 //Here's the numerical pattern discussed in the opening description.//\cf2 \
+\
+talaArray = [2, 2, 3, 2, 4, 3, 2];\
+\
+\
+\cf3 //The code below lays out the percussive rhythmic backbone for the 1st section of the piece//\cf2 \
+\
+\
+bassThudBuffer = \cf4 CtkBuffer\cf2 .buffer(512).sine3(0.0, 1, 1, 1,\
+	1, 1, 0,\
+	2, 0.85, 0,\
+	3, 0.65, 0,\
+	4, 0.45, 0,\
+	5, 0.2, 0, \
+	6, 0.1, 0\
+	);\
+	\
+bassThud = \cf4 CtkSynthDef\cf2 (\cf5 \\thud\cf2 , \{\cf4 arg\cf2  thudFreq, thudAmp, thudDur, thudBuffer;\
+	\cf4 var\cf2  osc, env;\
+	osc = \cf4 Osc\cf2 .ar(bassThudBuffer, thudFreq, 0, thudAmp);\
+	env = \cf4 EnvGen\cf2 .kr(\cf4 Env\cf2 ([0.001, 1, 0.001, 0.001], [0.01, 0.9, 0.09], \cf5 \\exp\cf2 ), timeScale: thudDur);\
+	\cf4 Out\cf2 .ar(0, \cf4 Pan2\cf2 .ar(osc * env, 0));\
+\});\
+\
+\cf3 //Each iteration of the "tala" by the "thud" instrument in first section of the piece is shortened by 20%; these are described by part1TimeArray.// \cf2 \
+\
+part1TimeArray = [\
+(2.5 * talaArray), (2 * talaArray), (1.6 * talaArray), (1.28 * talaArray), (1.02 * talaArray), (0.82 * talaArray)\
+];\
+\
+\
+score.add(bassThudBuffer);\
+\
+bassThudFunc = \{\cf4 arg\cf2  starttime, freq, amp, duration;\
+	\cf4 var\cf2  now, playTime, startNewTala;\
+	now = starttime;\
+\
+\cf3 //shrinkingTalaArray refers to each iteration of the tala-esque rhythmic pattern...in the part1TimeArray, there is a different multiplier for each element in the array, showing a 20% decrease in rhythmic values in each successive tala statement. startNewTala means move on to the next element in part1TimeArray//\cf2 \
+\
+	part1TimeArray.do\{\cf4 arg\cf2  shrinkingTalaArray, inc;\
+		startNewTala = now;\
+\
+\cf3 //playTime is the time at which each note actually occurs. talaNoteLength refers to how long each rhythmic block of the tala is...for example, even though the note duration at first is listed as 1.5, the time between impulses for the first few notes is 5 seconds.//\cf2 \
+	\
+		shrinkingTalaArray.do\{\cf4 arg\cf2  talaNoteLength, inc;\
+			playTime = now;\
+\
+			score.add(\
+			bassThud.new(playTime, duration).thudFreq_(freq).thudAmp_(amp.dbamp).thudDur_(duration).thudBuffer_(bassThudBuffer));\
+\
+			now = playTime + talaNoteLength;\
+\
+		\};\
+\
+		now = startNewTala + shrinkingTalaArray.sum;\
+\
+	\}\};\
+\
+\cf3 //1.0 sec is the master start time//\cf2 \
+\
+bassThudFunc.value(1.0, 20, 0, 1.5);\
+bassThudFunc.value(1.0, 26, 0, 1.5);\
+\
+\
+\
+\
+\cf3 //Below are sets of high-pitched overtones that go with the thuds...there are four of them in total, and they occur in a repeating pattern//\cf2 \
+\
+thudOvertone = \cf4 CtkSynthDef\cf2 (\cf5 \\thudOT\cf2 , \{\cf4 arg\cf2  overtoneFreq, overtoneAmp, overtoneDur, overtoneBuffer;\
+	\cf4 var\cf2  osc, env;\
+	osc = \cf4 Osc\cf2 .ar(overtoneBuffer, overtoneFreq, 0, overtoneAmp);\
+	env = \cf4 EnvGen\cf2 .kr(\cf4 Env\cf2 ([0.001, 1, 0.001, 0.001], [0.01, 0.9, 0.09], \cf5 \\exp\cf2 ), timeScale: overtoneDur);\
+	\cf4 Out\cf2 .ar(0, \cf4 Pan2\cf2 .ar(osc * env, 0));\
+\});\
+\
+\cf3 //These overtones were chosen kind of randomly//\cf2 \
+\
+thudOvertone1Buffer = \cf4 CtkBuffer\cf2 .buffer(512).sine3(0.0, 1, 1, 1, \
+	70, 0.001, 0,\
+	71, 0.001, 0, \
+	130, 0.001, 0,\
+	145, 0.001, 0,\
+	160, 0.001, 0, \
+	175, 0.001, 0\
+	);\
+\
+thudOvertone2Buffer = \cf4 CtkBuffer\cf2 .buffer(512).sine3(0.0, 1, 1, 1, \
+	110, 0.001, 0,\
+	111, 0.001, 0, \
+	170, 0.001, 0,\
+	185, 0.001, 0,\
+	200, 0.001, 0, \
+	215, 0.001, 0\
+	);\
+	\
+thudOvertone3Buffer = \cf4 CtkBuffer\cf2 .buffer(512).sine3(0.0, 1, 1, 1, \
+	90, 0.001, 0,\
+	91, 0.001, 0, \
+	150, 0.001, 0,\
+	170, 0.001, 0,\
+	190, 0.001, 0, \
+	210, 0.001, 0\
+	);\
+\
+thudOvertone4Buffer = \cf4 CtkBuffer\cf2 .buffer(512).sine3(0.0, 1, 1, 1, \
+	130, 0.001, 0,\
+	131, 0.001, 0, \
+	190, 0.001, 0,\
+	205, 0.001, 0,\
+	220, 0.001, 0, \
+	235, 0.001, 0\
+	);\
+	\
+score.add(thudOvertone1Buffer, thudOvertone2Buffer, thudOvertone3Buffer, thudOvertone4Buffer);\
+\
+\cf3 //Here's an array of arrays...the little arrays contained in the big one contain information about which set of overtones is being used at what point in time.//\cf2 \
+\
+overtoneTimeArray = [\
+[thudOvertone3Buffer, 10], [thudOvertone1Buffer, 22.5], [thudOvertone3Buffer, 40], [thudOvertone1Buffer, 49], [thudOvertone3Buffer, 59], [thudOvertone1Buffer, 71], [thudOvertone2Buffer, 77], [thudOvertone3Buffer, 81],[thudOvertone1Buffer, 87.4], [thudOvertone2Buffer, 92.2], [thudOvertone3Buffer, 95.4], [thudOvertone1Buffer, 106.6], [thudOvertone2Buffer, 109.8], [thudOvertone3Buffer, 112.36], [thudOvertone1Buffer, 118.76], [thudOvertone2Buffer, 121.32], [thudOvertone3Buffer, 126.44], [thudOvertone4Buffer, 130.28], [thudOvertone1Buffer, 132.84], [thudOvertone2Buffer, 134.88], [thudOvertone3Buffer, 136.92], [thudOvertone4Buffer, 139.98], [thudOvertone1Buffer, 142.02], [thudOvertone2Buffer, 146.1], [thudOvertone3Buffer, 149.16], [thudOvertone4Buffer, 151.2], [thudOvertone1Buffer, 152.84], [thudOvertone2Buffer, 154.48], [thudOvertone3Buffer, 156.94], [thudOvertone4Buffer, 158.58], [thudOvertone1Buffer, 161.86], [thudOvertone2Buffer, 164.32], [thudOvertone3Buffer, 165.96]\
+];\
+\
+thudOvertoneFunc = \{\cf4 arg\cf2  starttime, freq, amp, duration;\
+	\cf4 var\cf2  buffer, overtoneTimeData, playTime;\
+	\
+	overtoneTimeArray.do\{\cf4 arg\cf2  overtoneData;\
+		#buffer, overtoneTimeData = overtoneData;\
+		playTime = starttime + overtoneTimeData;\
+		score.add(\
+		thudOvertone.new(playTime, duration).overtoneFreq_(freq).overtoneAmp_(amp).overtoneDur_(duration).overtoneBuffer_(buffer)\
+		)\}\};\
+\
+\
+thudOvertoneFunc.value(1.0, 20, -51.dbamp, 2.5);\
+thudOvertoneFunc.value(1.0, 26, -51.dbamp, 2.5);\
+\
+\
+\cf3 //By using LFNoise0 as a ring modulator, I was able to get this jingly sound. This SynthDef also contains one of my favorite variable names of all time: jingleFreq. Kind of like a Ripley's Believe It or Not Christmas special. Or something.//\cf2 \
+\
+\
+thudJingle = \cf4 CtkSynthDef\cf2 (\cf5 \\jingle\cf2 , \{\cf4 arg\cf2  jingleFreq, jingleAmp, jingleDur, noiseFreq = 15, noiseAmp = -12.dbamp;\
+	\cf4 var\cf2  osc, noiseMod, env;\
+	osc = \cf4 SinOsc\cf2 .ar(jingleFreq, 0, jingleAmp);\
+	noiseMod = \cf4 LFNoise0\cf2 .ar(noiseFreq, noiseAmp);\
+	env = \cf4 EnvGen\cf2 .kr(\cf4 Env\cf2 ([0.0001, 1, 0.0001], [0.005, jingleDur - 0.005], \cf5 \\exp\cf2 ));\
+	\cf4 Out\cf2 .ar(0, \cf4 Pan2\cf2 .ar((osc * noiseMod) * env), 0);\
+\});\
+\
+\cf3 //The occurrences of the jingle occur every x thud notes, where x is each successive number in the tala array//\cf2 \
+\
+\
+thudJingleTimeArray = [45, 53, 63, 81, 87.4, 106.6, 114.92, 121.32, 130.28, 134.88, 142.02, 149.16, 156.94, 164.32];\
+\
+thudJingleFunc = \{\cf4 arg\cf2  starttime, freq, amp, duration, noiseFreq, noiseAmp;\
+	thudJingleTimeArray.do\{\cf4 arg\cf2  jingleTimeData;\
+		\cf4 var\cf2  playTime;\
+		playTime = starttime + jingleTimeData;\
+		9.do\{\cf4 arg\cf2  inc;\
+			score.add(\
+			thudJingle.new(playTime, duration).jingleFreq_(freq * inc).jingleAmp_(amp).jingleDur_(duration).noiseFreq_(noiseFreq).noiseAmp_(noiseAmp)			)\};\
+	\};\
+\};\
+\
+thudJingleFunc.value(1.0, 8000, -24.dbamp, 1.5, 10.rrand(20), -12.dbamp);\
+\
+\
+\
+		\
+\cf3 //The code below outlines the melodic instruments that form a strange sort of counterpoint in the first section of the piece. The leadTimeArray has been divided into rows to show the "phrases" within the melody.//\cf2 \
+\
+\
+leadTimeArray = [\
+ [13.5, 8, 4, 4], \
+ [32, 8, 4, 4], [36, 8, 4, 4], \
+ [47, 8, 4, 4], [49, 8, 4, 4], [51, 10, 5, 5], [54, 10, 5, 5], \
+ [62, 8, 4, 4], [64, 8, 4, 4], [67, 8, 4, 4], [69, 12, 6, 6], [73, 8, 4, 4]\
+ ];\
+\
+leadFreqArray = [196, 196, 220, 196, 220, 277.18, 261.68, 370, 293.66, 329.63, 440, 392];\
+\
+leadAmpArray = [1, 0.5, 0.75, 0.5, 1.0, 0.75, 0.5, 0.5].normalizeSum;\
+\
+leadSustain = \cf4 CtkSynthDef\cf2 (\cf5 \\leadsust1\cf2 , \{\cf4 arg\cf2  leadFreq, leadAmp, leadDur, leadAttack, leadDecay, leadPan;\
+	\cf4 var\cf2  osc, env, mod;\
+	env = \cf4 EnvGen\cf2 .kr(\cf4 Env\cf2 ([0.001, 1, 1, 0.001], [leadAttack, leadDur - (leadAttack + leadDecay), leadDecay], \cf5 \\exp\cf2 ));\
+	osc = \cf4 SinOsc\cf2 .ar(leadFreq, 0, leadAmp);\
+	\cf4 Out\cf2 .ar(0, \cf4 Pan2\cf2 .ar(osc * osc * env, leadPan));\
+\});\
+\
+\cf3 //Each of the four lead instruments has a unique (in)harmonic spectrum derived the tala pattern. The "FreqMultArrays" associated with each instrument describe these spectra in relation to the fundamental pitch.//\cf2 \
+\
+lead1FreqMultArray = [1, 2, (2 * (2 ** (8/12))), (4 * (2 ** (3/12))), (4 * (2 ** (9/12))), 8 * (2 **(2/12)), 8 * (2 ** (5/12)), 8 * (2 ** (10/12))];\
+\
+leadSustain1Func = \{\cf4 arg\cf2  starttime, amp, pan;\
+	\
+	leadTimeArray.do\{\cf4 arg\cf2  eachNote, freqInc;\
+		\cf4 var\cf2  timeData, duration, attack, decay, playTime;\
+		#timeData, duration, attack, decay = eachNote;\
+		playTime = timeData + starttime;\
+	\
+		lead1FreqMultArray.do\{\cf4 arg\cf2  freqMult, inc;\
+			score.add(\
+			leadSustain.new(playTime, duration).leadFreq_(leadFreqArray.at(freqInc) * freqMult).leadAmp_(amp * leadAmpArray.at(inc)).leadDur_(duration).leadAttack_(attack).leadDecay_(decay).leadPan_(pan));\
+	\}\}\};\
+	\
+\cf3 //First lead instrument plays at center//\cf2 \
+	\
+leadSustain1Func.value(1.0, -6.dbamp, 0);\
+	\
+\
+\cf3 //The melody (and durations of the melody notes) compresses in time with the tala rhythm patterns//\cf2 \
+\
+leadSustain1FuncShort = \{\cf4 arg\cf2  starttime, amp, pan;\
+	\
+	\cf3 //Multiply leadTimeArray by 0.64 because the first melodic statement is spread over two tala statements. If each tala compresses time by factor of 0.8, two talas will compress it by 0.8 ** 2 = 64. Also, the melody occurs an octave higher, hence the multiplier for the leadFreqArray//\cf2 \
+	\
+	(0.64 * leadTimeArray).do\{\cf4 arg\cf2  eachNote, freqInc;\
+		\cf4 var\cf2  timeData, duration, attack, decay, playTime;\
+		#timeData, duration, attack, decay = eachNote;\
+		playTime = timeData + starttime;\
+		\
+		lead1FreqMultArray.do\{\cf4 arg\cf2  freqMult, inc;\
+			score.add(\
+			leadSustain.new(playTime, duration).leadFreq_(2 * (leadFreqArray.at(freqInc)) * freqMult).leadAmp_(amp * leadAmpArray.at(inc)).leadDur_(duration).leadAttack_(attack).leadDecay_(decay).leadPan_(pan));\
+	\}\}\};\
+	\
+	\
+leadSustain1FuncShort.value(82, -6.dbamp, 0);\
+\
+\
+leadSustain1FuncShorter = \{\cf4 arg\cf2  starttime, amp, pan;\
+	\
+	\cf3 //Multiply by 0.4096...since we've been through four tala statements, time is now compressed by a factor of 0.8 ** 4//\cf2 \
+	\
+	(0.4096 * leadTimeArray).do\{\cf4 arg\cf2  eachNote, freqInc;\
+		\cf4 var\cf2  timeData, duration, attack, decay, playTime;\
+		#timeData, duration, attack, decay = eachNote;\
+		playTime = timeData + starttime;\
+		\
+		lead1FreqMultArray.do\{\cf4 arg\cf2  freqMult, inc;\
+			score.add(\
+			leadSustain.new(playTime, duration).leadFreq_(4 * (leadFreqArray.at(freqInc)) * freqMult).leadAmp_(amp * leadAmpArray.at(inc)).leadDur_(duration).leadAttack_(attack).leadDecay_(decay).leadPan_(pan));\
+	\}\}\};\
+\
+	\
+leadSustain1FuncShorter.value(133.84, -6.dbamp, 0);\
+\
+\cf3 //Second lead instrument//\cf2 \
+	\
+lead2FreqMultArray = [1, 2 * (2 ** (1/12)), (2 * (2 ** (9/12))), (4 * (2 ** (4/12))), (4 * (2 ** (7/12))), 8 * (2 **(2/12)), 8 * (2 ** (4/12)), 8 * (2 ** (6/12))];\
+\
+\
+leadSustain2Func = \{\cf4 arg\cf2  starttime, amp, pan;\
+	\
+	leadTimeArray.do\{\cf4 arg\cf2  eachNote, freqInc;\
+		\cf4 var\cf2  timeData, duration, attack, decay, playTime;\
+		#timeData, duration, attack, decay = eachNote;\
+		playTime = timeData + starttime;\
+\
+		lead2FreqMultArray.do\{\cf4 arg\cf2  freqMult, inc;\
+			score.add(\
+			leadSustain.new(playTime, duration).leadFreq_(leadFreqArray.at(freqInc) * freqMult).leadAmp_(amp * leadAmpArray.at(inc)).leadDur_(duration).leadAttack_(attack).leadDecay_(decay).leadPan_(pan));\
+	\}\}\};\
+	\
+leadSustain2Func.value(46.5, -12.dbamp, 0.707);\
+\
+\
+\
+leadSustain2FuncShort = \{\cf4 arg\cf2  starttime, amp, pan;\
+	\
+	(0.64 * leadTimeArray).do\{\cf4 arg\cf2  eachNote, freqInc;\
+		\cf4 var\cf2  timeData, duration, attack, decay, playTime;\
+		#timeData, duration, attack, decay = eachNote;\
+		playTime = timeData + starttime;\
+		\
+		lead2FreqMultArray.do\{\cf4 arg\cf2  freqMult, inc;\
+			score.add(\
+			leadSustain.new(playTime, duration).leadFreq_(2 * (leadFreqArray.at(freqInc)) * freqMult).leadAmp_(amp * leadAmpArray.at(inc)).leadDur_(duration).leadAttack_(attack).leadDecay_(decay).leadPan_(pan));\
+	\}\}\};\
+	\
+\cf3 //Plays on the right at half the amplitude of the first instrument//\cf2 \
+	\
+leadSustain2FuncShort.value(127.5, -12.dbamp, 0.707);\
+\
+\
+\cf3 //Third lead instrument//\cf2 \
+\
+lead3FreqMultArray = [1, 1 * (2 ** (11/12)), (2 * (2 ** (9/12))), (4 * (2 ** (6/12))), (8 * (2 ** (2/12))), 8 * (2 **(9/12)), 16 * (2 ** (5/12)), 16 * (2 ** (7/12))];\
+\
+leadSustain3Func = \{\cf4 arg\cf2  starttime, amp, pan;\
+	\
+	leadTimeArray.do\{\cf4 arg\cf2  eachNote, freqInc;\
+		\cf4 var\cf2  timeData, duration, attack, decay, playTime;\
+		#timeData, duration, attack, decay = eachNote;\
+		playTime = timeData + starttime;\
+\
+		lead3FreqMultArray.do\{\cf4 arg\cf2  freqMult, inc;\
+			score.add(\
+			leadSustain.new(playTime, duration).leadFreq_(leadFreqArray.at(freqInc) * freqMult).leadAmp_(amp * leadAmpArray.at(inc)).leadDur_(duration).leadAttack_(attack).leadDecay_(decay).leadPan_(pan));\
+	\}\}\};\
+	\
+	\cf3 //Plays on the left at an amplitude between the first and second lead instruments//\cf2 \
+	\
+leadSustain3Func.value(78.9, -9.dbamp, -0.707);\
+\
+\
+\cf3 //Fourth lead instrument//\cf2 \
+\
+lead4FreqMultArray = [1, 2 * (2 ** (2/12)), (2 * (2 ** (11/12))), (4 * (2 ** (5/12))), (4 * (2 ** (10/12))), 8 * (2 **(2/12)), 8 * (2 ** (4/12)), 8 * (2 ** (7/12))];\
+\
+\
+leadSustain4FuncShort = \{\cf4 arg\cf2  starttime, amp, pan;\
+	(0.64 * leadTimeArray).do\{\cf4 arg\cf2  eachNote, freqInc;\
+		\cf4 var\cf2  timeData, duration, attack, decay, playTime;\
+		#timeData, duration, attack, decay = eachNote;\
+		playTime = timeData + starttime;\
+		\
+		lead4FreqMultArray.do\{\cf4 arg\cf2  freqMult, inc;\
+			score.add(\
+			leadSustain.new(playTime, duration).leadFreq_(0.5 * (leadFreqArray.at(freqInc)) * freqMult).leadAmp_(amp * leadAmpArray.at(inc)).leadDur_(duration).leadAttack_(attack).leadDecay_(decay).leadPan_(pan));\
+	\}\}\};\
+	\
+\cf3 //Fourth instrument is the lowest in frequency and also the loudest...helps to balance with other voices. It plays at the center//\cf2 \
+	\
+leadSustain4FuncShort.value(111.12, -3.dbamp, 0);\
+\
+\
+\cf3 //This drone runs throughout the entire piece--in some ways, it is a connector between the first section of the second section//\cf2 \
+	\
+part1LowDrone = \cf4 CtkSynthDef\cf2 (\cf5 \\lowdrone\cf2 , \{\cf4 arg\cf2  droneFreq, droneAmp, droneDur, droneNoiseFreq, droneNoiseAmp, droneModFreq, droneModIndex;\
+	\cf4 var\cf2  osc, env, noise, mod, deviation;\
+	deviation = droneModFreq * droneModIndex;\
+	env = \cf4 EnvGen\cf2 .kr(\cf4 Env\cf2 ([0.001, 0.25, 0.7187, 0.3, 1, 0.001], [0.03 * droneDur, 0.74 * droneDur, 0.1 * droneDur, 0.1 * droneDur - 0.01 , 0.01], \cf5 \\exp\cf2 ));\
+	noise = \cf4 LFNoise1\cf2 .ar(droneNoiseFreq, droneNoiseAmp); \
+	mod = \cf4 SinOsc\cf2 .ar(droneModFreq, 0, deviation);\
+	osc = \cf4 SinOsc\cf2 .ar(droneFreq + mod, 0, droneAmp);\
+	\cf4 Out\cf2 .ar(0, \cf4 Pan2\cf2 .ar(osc * osc * noise * env, 0));\
+\});\
+	\
+\
+\cf3 //Over the course of the first section, the drone is ring modulated by itself and an LFNoise1 signal of ever-increasing frequency. In the second section, the LFNoise1 signal remains steady as an FM index of modulation gradually rises//\cf2 \
+		\
+part1LowDroneFunc = \{\cf4 arg\cf2  starttime, freq, amp, duration, noiseFreqLow, noiseFreqHigh, noiseAmp, modFreq;\
+	\
+	lead1FreqMultArray.do\{\cf4 arg\cf2  freqMult, inc;\
+		score.add(\
+		part1LowDrone.new(starttime, duration).droneFreq_(freqMult * freq).droneAmp_(leadAmpArray.at(inc) * amp).droneDur_(duration).droneNoiseFreq_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([noiseFreqLow, noiseFreqHigh], [167], \cf5 \\exp\cf2 ))).droneNoiseAmp_(noiseAmp).droneModFreq_(modFreq).droneModIndex_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([0, 0, 5], [167, 51.2], \cf5 \\sine\cf2 )));\
+		)\};\
+\};\
+\
+part1LowDroneFunc.value(1.0, 10, 6.dbamp, 217.2, 1, 40, 1.0, 100);\
+\
+\
+\
+\cf3 //In the second section of the piece, the tala pattern begins compressing by a greater ratio--roughly every two tala iterations, the tala pattern compresses by a factor of 0.66. This is achieved using a pseudo metric modulation technique. Every other time a tala pattern reaches the initial "3" in its sequence, this note is made to be the same length as the preceding "2" notes...the following "2" note is then calculated in relation to the shortened "3," and the rhythmic pattern accelerates.//	\cf2 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\ql\qnatural\pardirnatural
+\cf2 \
+\
+rotatedTalaArray = talaArray.rotate(-2);\
+\
+\cf3 //The Return of Thud//\cf2 \
+\
+bassThudBuffer = \cf4 CtkBuffer\cf2 .buffer(512).sine3(0.0, 1, 1, 1,\
+	1, 1, 0,\
+	2, 0.85, 0,\
+	3, 0.65, 0,\
+	4, 0.45, 0,\
+	5, 0.2, 0, \
+	6, 0.1, 0\
+	);\
+	\
+bassThud = \cf4 CtkSynthDef\cf2 (\cf5 \\thud\cf2 , \{\cf4 arg\cf2  thudFreq, thudAmp, thudDur, thudBuffer;\
+	\cf4 var\cf2  osc, env;\
+	osc = \cf4 Osc\cf2 .ar(bassThudBuffer, thudFreq, 0, thudAmp);\
+	env = \cf4 EnvGen\cf2 .kr(\cf4 Env\cf2 ([0.001, 1, 0.001, 0.001], [0.01, 0.9, 0.09], \cf5 \\exp\cf2 ), timeScale: thudDur);\
+	\cf4 Out\cf2 .ar(0, \cf4 Pan2\cf2 .ar(osc * env, 0));\
+\});\
+\
+\
+part2TimeArray = [\
+(0.54 * [2, 2]), 0.54 * rotatedTalaArray, 0.54 * rotatedTalaArray, 0.36 * rotatedTalaArray, 0.36 * rotatedTalaArray, 0.24 * rotatedTalaArray, 0.24 * rotatedTalaArray, 0.16 * rotatedTalaArray, 0.16 * rotatedTalaArray, (0.16 * [3, 2, 4, 3, 2])];\
+\
+\
+score.add(bassThudBuffer);\
+\
+bassThudFunc = \{\cf4 arg\cf2  starttime, freq, amp, duration;\
+	\cf4 var\cf2  now, playTime, startNewTala;\
+	now = starttime;\
+\
+	part2TimeArray.do\{\cf4 arg\cf2  shrinkingTalaArray, inc;\
+		startNewTala = now;\
+	\
+		shrinkingTalaArray.do\{\cf4 arg\cf2  talaNoteLength, inc;\
+			playTime = now;\
+\
+			score.add(\
+			bassThud.new(playTime, duration).thudFreq_(freq).thudAmp_(amp.dbamp).thudDur_(duration).thudBuffer_(bassThudBuffer));\
+\
+			now = playTime + talaNoteLength;\
+\
+		\};\
+\
+		now = startNewTala + shrinkingTalaArray.sum;\
+\
+	\}\};\
+\
+\
+bassThudFunc.value(167.0, 20, 0, 1.5);\
+bassThudFunc.value(167.0, 26, 0, 1.5);\
+\
+\
+\cf3 //And Thud's sidekick//\cf2 \
+\
+thudOvertone = \cf4 CtkSynthDef\cf2 (\cf5 \\thudOT\cf2 , \{\cf4 arg\cf2  overtoneFreq, overtoneAmp, overtoneDur, overtoneBuffer;\
+	\cf4 var\cf2  osc, env;\
+	osc = \cf4 Osc\cf2 .ar(overtoneBuffer, overtoneFreq, 0, overtoneAmp);\
+	env = \cf4 EnvGen\cf2 .kr(\cf4 Env\cf2 ([0.001, 1, 0.001, 0.001], [0.01, 0.9, 0.09], \cf5 \\exp\cf2 ), timeScale: overtoneDur);\
+	\cf4 Out\cf2 .ar(0, \cf4 Pan2\cf2 .ar(osc * env, 0));\
+\});\
+\
+\cf3 //These overtones were chosen kind of randomly//\cf2 \
+\
+thudOvertone1Buffer = \cf4 CtkBuffer\cf2 .buffer(512).sine3(0.0, 1, 1, 1, \
+	70, 0.001, 0,\
+	71, 0.001, 0, \
+	130, 0.001, 0,\
+	145, 0.001, 0,\
+	160, 0.001, 0, \
+	175, 0.001, 0\
+	);\
+\
+thudOvertone2Buffer = \cf4 CtkBuffer\cf2 .buffer(512).sine3(0.0, 1, 1, 1, \
+	110, 0.001, 0,\
+	111, 0.001, 0, \
+	170, 0.001, 0,\
+	185, 0.001, 0,\
+	200, 0.001, 0, \
+	215, 0.001, 0\
+	);\
+	\
+thudOvertone3Buffer = \cf4 CtkBuffer\cf2 .buffer(512).sine3(0.0, 1, 1, 1, \
+	90, 0.001, 0,\
+	91, 0.001, 0, \
+	150, 0.001, 0,\
+	170, 0.001, 0,\
+	190, 0.001, 0, \
+	210, 0.001, 0\
+	);\
+\
+thudOvertone4Buffer = \cf4 CtkBuffer\cf2 .buffer(512).sine3(0.0, 1, 1, 1, \
+	130, 0.001, 0,\
+	131, 0.001, 0, \
+	190, 0.001, 0,\
+	205, 0.001, 0,\
+	220, 0.001, 0, \
+	235, 0.001, 0\
+	);\
+	\
+score.add(thudOvertone1Buffer, thudOvertone2Buffer, thudOvertone3Buffer, thudOvertone4Buffer);\
+\
+\
+\cf3 //These are once again orgainzed in a looping pattern//\cf2 \
+\
+overtoneTimeArray = [\
+[thudOvertone3Buffer, 0], [thudOvertone4Buffer, 1.08], [thudOvertone1Buffer, 2.16], [thudOvertone2Buffer, 3.78],[thudOvertone3Buffer, 4.86], [thudOvertone4Buffer, 7.02], [thudOvertone1Buffer, 8.64], [thudOvertone2Buffer, 9.72],[thudOvertone3Buffer, 10.8], [thudOvertone4Buffer, 11.88], [thudOvertone1Buffer, 13.5], [thudOvertone2Buffer, 14.58],[thudOvertone3Buffer, 16.74], [thudOvertone4Buffer, 18.36], [thudOvertone1Buffer, 19.44], [thudOvertone2Buffer, 20.52],[thudOvertone3Buffer, 21.6], [thudOvertone4Buffer, 22.68], [thudOvertone1Buffer, 23.4], [thudOvertone2Buffer, 24.84],[thudOvertone3Buffer, 25.92], [thudOvertone4Buffer, 26.64], [thudOvertone1Buffer, 27.36], [thudOvertone2Buffer, 28.08],[thudOvertone3Buffer, 29.16], [thudOvertone4Buffer, 29.88], [thudOvertone1Buffer, 31.32], [thudOvertone2Buffer, 32.4],[thudOvertone3Buffer, 33.12], [thudOvertone4Buffer, 33.84], [thudOvertone1Buffer, 34.56], [thudOvertone2Buffer, 35.28],[thudOvertone3Buffer, 35.76], [thudOvertone4Buffer, 36.72], [thudOvertone1Buffer, 37.44], [thudOvertone2Buffer, 37.92],[thudOvertone3Buffer, 38.4], [thudOvertone4Buffer, 38.88], [thudOvertone1Buffer, 39.6], [thudOvertone2Buffer, 40.08],[thudOvertone3Buffer, 41.04], [thudOvertone4Buffer, 41.76], [thudOvertone1Buffer, 42.24], [thudOvertone2Buffer, 42.72],[thudOvertone3Buffer, 43.2], [thudOvertone4Buffer, 43.68], [thudOvertone1Buffer, 44], [thudOvertone2Buffer, 44.64],[thudOvertone3Buffer, 45.12], [thudOvertone4Buffer, 45.44], [thudOvertone1Buffer, 45.76], [thudOvertone2Buffer, 46.08],[thudOvertone3Buffer, 46.56], [thudOvertone4Buffer, 46.88], [thudOvertone1Buffer, 47.52], [thudOvertone2Buffer, 48],[thudOvertone3Buffer, 48.32], [thudOvertone4Buffer, 48.64], [thudOvertone1Buffer, 48.96], [thudOvertone2Buffer, 49.44],[thudOvertone3Buffer, 49.76], [thudOvertone4Buffer, 50.4], [thudOvertone1Buffer, 50.88], [thudOvertone2Buffer, 51.2]\
+];\
+\
+thudOvertoneFunc = \{\cf4 arg\cf2  starttime, freq, amp, duration;\
+	\cf4 var\cf2  buffer, overtoneTimeData, playTime;\
+	\
+	overtoneTimeArray.do\{\cf4 arg\cf2  overtoneData;\
+		#buffer, overtoneTimeData = overtoneData;\
+		playTime = starttime + overtoneTimeData;\
+		score.add(\
+		thudOvertone.new(playTime, duration).overtoneFreq_(freq).overtoneAmp_(amp).overtoneDur_(duration).overtoneBuffer_(buffer)\
+		)\}\};\
+\
+thudOvertoneFunc.value(167.0, 20, -51.dbamp, 2.5);\
+thudOvertoneFunc.value(167.0, 26, -51.dbamp, 2.5);\
+\
+\cf3 //Jingles occur on the third note of each tala pattern here.//\cf2 \
+\
+thudJingle = \cf4 CtkSynthDef\cf2 (\cf5 \\jingle\cf2 , \{\cf4 arg\cf2  jingleFreq, jingleAmp, jingleDur, noiseFreq, noiseAmp = -12.dbamp;\
+	\cf4 var\cf2  osc, noiseMod, env;\
+	osc = \cf4 SinOsc\cf2 .ar(jingleFreq, 0, jingleAmp);\
+	noiseMod = \cf4 LFNoise0\cf2 .ar(noiseFreq, noiseAmp);\
+	env = \cf4 EnvGen\cf2 .kr(\cf4 Env\cf2 ([0.0001, 1, 0.0001], [0.005, jingleDur - 0.005], \cf5 \\exp\cf2 ));\
+	\cf4 Out\cf2 .ar(0, \cf4 Pan2\cf2 .ar((osc * noiseMod) * env), 0);\
+\});\
+\
+\
+\
+thudJingleTimeArray = [2.16, 11.88, 21.6, 28.08, 34.56, 38.88, 43.2, 46.08, 48.96];\
+\
+thudJingleFuncSection2 = \{\cf4 arg\cf2  starttime, freq, amp, noiseAmp;\
+	thudJingleTimeArray.do\{\cf4 arg\cf2  jingleTimeData;\
+		\cf4 var\cf2  playTime, noiseFreq, duration;\
+		duration = 10;\
+		if(jingleTimeData == 48.96, \{duration = 3.2\});\
+		noiseFreq = 15.rrand(20);\
+		playTime = starttime + jingleTimeData;\
+		9.do\{\cf4 arg\cf2  inc;\
+			score.add(\
+			thudJingle.new(playTime, duration).jingleFreq_(freq * inc).jingleAmp_(amp.dbamp).jingleDur_(duration).noiseFreq_(noiseFreq).noiseAmp_(noiseAmp)			)\};\
+	\};\
+\};\
+\
+thudJingleFuncSection2.value(167.0, 8000, -24, -12.dbamp);\
+\
+\
+\cf3 //Here are the lead instruments again--they act in two capacities here. The first is as single notes that rhythmically outline the tala pattern, playing a single pitch class across four octaves. The other is as a percussive sound, which is used to delineate the points where the tala rate changes occur. Each percussive note moves the pitch up by a half step.// \cf2 \
+\
+\
+leadAmpArray = [1, 0.5, 0.75, 0.5, 1.0, 0.75, 0.5, 0.5].normalizeSum;\
+\
+lead1FreqMultArray = [1, 2, (2 * (2 ** (8/12))), (4 * (2 ** (3/12))), (4 * (2 ** (9/12))), 8 * (2 **(2/12)), 8 * (2 ** (5/12)), 8 * (2 ** (10/12))];\
+\
+lead2FreqMultArray = [1, 2 * (2 ** (1/12)), (2 * (2 ** (9/12))), (4 * (2 ** (4/12))), (4 * (2 ** (7/12))), 8 * (2 **(2/12)), 8 * (2 ** (4/12)), 8 * (2 ** (6/12))];\
+\
+lead3FreqMultArray = [1, 1 * (2 ** (11/12)), (2 * (2 ** (9/12))), (4 * (2 ** (6/12))), (8 * (2 ** (2/12))), 8 * (2 **(9/12)), 16 * (2 ** (5/12)), 16 * (2 ** (7/12))];\
+\
+lead4FreqMultArray = [1, 2 * (2 ** (2/12)), (2 * (2 ** (11/12))), (4 * (2 ** (5/12))), (4 * (2 ** (10/12))), 8 * (2 **(2/12)), 8 * (2 ** (4/12)), 8 * (2 ** (7/12))];\
+\
+\
+leadPercussiveFreqTimeArray = [\
+\
+[lead1FreqMultArray, 932.32, 0], [lead2FreqMultArray, 466.16, 0], [lead3FreqMultArray, 233.08, 0], [lead4FreqMultArray, 116.54, 0], \
+\
+[lead1FreqMultArray, 987.76, 21.6], [lead2FreqMultArray, 493.88, 21.6], [lead3FreqMultArray, 246.94, 21.6], [lead4FreqMultArray, 123.47, 21.6],\
+\
+[lead1FreqMultArray, 1046.52, 34.56], [lead2FreqMultArray, 523.26, 34.56], [lead3FreqMultArray, 261.63, 34.56], [lead4FreqMultArray, 130.82, 34.56], \
+\
+[lead1FreqMultArray, 1108.72, 43.2], [lead2FreqMultArray, 554.36, 43.2], [lead3FreqMultArray, 277.18, 43.2], [lead4FreqMultArray, 138.59, 43.2]\
+];\
+\
+\
+leadSustainFreqTimeArray = [\
+[lead3FreqMultArray, 233.08, 2.16], [lead1FreqMultArray, 116.54, 4.32], [lead4FreqMultArray, 932.32, 6.48], [lead2FreqMultArray, 466.16, 9.72], [lead3FreqMultArray, 233.08, 11.88], [lead1FreqMultArray, 116.54, 16.2], \
+\
+[lead4FreqMultArray, 932.32, 19.44], [lead2FreqMultArray, 493.88, 23.04], [lead3FreqMultArray, 246.94, 24.48], [lead1FreqMultArray, 987.76, 26.64], [lead4FreqMultArray, 123.47, 28.08], [lead2FreqMultArray, 493.88, 30.96], [lead3FreqMultArray, 246.94, 33.12],\
+\
+ [lead1FreqMultArray, 1046.52, 35.52], [lead4FreqMultArray, 130.82, 36.48], [lead2FreqMultArray, 523.26, 37.92], [lead3FreqMultArray, 261.63, 38.88], [lead1FreqMultArray, 1046.52, 40.8], [lead4FreqMultArray, 130.82, 42.24], [lead2FreqMultArray, 554.36 , 43.84], \
+ \
+ [lead3FreqMultArray, 277.18, 44.48], [lead1FreqMultArray, 1108.72 , 45.44], [lead4FreqMultArray, 138.59 , 46.08], [lead2FreqMultArray,554.36 , 47.36], [lead3FreqMultArray, 277.18 , 48.32], [lead1FreqMultArray, 1108.72 , 48.96], [lead4FreqMultArray, 138.59 , 49.6]\
+ \
+  \
+];\
+\
+\
+leadPercussive = \cf4 CtkSynthDef\cf2 (\cf5 \\leadperc\cf2 , \{\cf4 arg\cf2  leadFreq, leadAmp, leadDur, leadPan;\
+	\cf4 var\cf2  osc, env, mod;\
+	env = \cf4 EnvGen\cf2 .kr(\cf4 Env\cf2 ([0.001, 1, 0.001], [0.01, leadDur - 0.01], \cf5 \\exp\cf2 ));\
+	osc = \cf4 SinOsc\cf2 .ar(leadFreq, 0, leadAmp);\
+	\cf4 Out\cf2 .ar(0, \cf4 Pan2\cf2 .ar(osc * osc * env, leadPan));\
+\});\
+\
+leadSustainSection2 = \cf4 CtkSynthDef\cf2 (\cf5 \\leadsust1\cf2 , \{\cf4 arg\cf2  leadFreq, leadAmp, leadDur, leadPan;\
+	\cf4 var\cf2  osc, env, mod;\
+	env = \cf4 EnvGen\cf2 .kr(\cf4 Env\cf2 ([0.001, 1, 0.001], [leadDur / 2, leadDur / 2], \cf5 \\exp\cf2 ));\
+	osc = \cf4 SinOsc\cf2 .ar(leadFreq, 0, leadAmp);\
+	\cf4 Out\cf2 .ar(0, \cf4 Pan2\cf2 .ar(osc * osc * env, leadPan));\
+\});\
+\
+\
+leadPercussiveFunc = \{\cf4 arg\cf2  starttime, amp, duration;\
+	\
+	leadPercussiveFreqTimeArray.do\{\cf4 arg\cf2  eachNote, freqInc;\
+		\cf4 var\cf2  multArray, frequency, timeData, pan, playTime;\
+		#multArray, frequency, timeData = eachNote;\
+		if(multArray == lead1FreqMultArray, \{pan = 0\});\
+		if(multArray == lead2FreqMultArray, \{pan = 0.707\});\
+		if(multArray == lead3FreqMultArray, \{pan = -0.707\});\
+		if(multArray == lead4FreqMultArray, \{pan = 0\});\
+		playTime = timeData + starttime;\
+	\
+		multArray.do\{\cf4 arg\cf2  freqMult, inc;\
+			score.add(\
+			leadPercussive.new(playTime, duration).leadFreq_(frequency * freqMult).leadAmp_(amp * leadAmpArray.at(inc)).leadDur_(duration).leadPan_(pan));\
+	\}\}\};\
+	\
+leadPercussiveFunc.value(167.0, 0.dbamp, 3);\
+	\
+\
+leadSustainFuncSection2 = \{\cf4 arg\cf2  starttime, amp, duration;\
+	\
+	leadSustainFreqTimeArray.do\{\cf4 arg\cf2  eachNote, freqInc;\
+		\cf4 var\cf2  multArray, frequency, timeData, pan, playTime;\
+		#multArray, frequency, timeData = eachNote;\
+		if(multArray == lead1FreqMultArray, \{pan = 0\});\
+		if(multArray == lead2FreqMultArray, \{pan = 0.707\});\
+		if(multArray == lead3FreqMultArray, \{pan = -0.707\});\
+		if(multArray == lead4FreqMultArray, \{pan = 0\});\
+		playTime = timeData + starttime;\
+	\
+		multArray.do\{\cf4 arg\cf2  freqMult, inc;\
+			score.add(\
+			leadSustainSection2.new(playTime, duration).leadFreq_(frequency * freqMult).leadAmp_(amp * leadAmpArray.at(inc)).leadDur_(duration).leadPan_(pan));\
+	\}\}\};\
+\
+leadSustainFuncSection2.value(167.0, 0.dbamp, 3);\
+\
+\
+\cf3 //These granular synthesis bursts contain grains with rather tall harmonic spectra. They occur at the beginnings of each tala pattern. These sounds also explore something cool that I stumbled upon. When we multiply a SinOsc by itself, that's a form of ring modulation--in essence, we are raising the SinOsc signal to the 2nd power. What if we raise signals to non-integer powers, specifically those less than one? Aside from blowing our eardrums out countless times because we don't really understand the math behind it and therefore have no idea what is actually going on, we get some pretty cool sounds.\cf2 \
+\
+\
+bufferGrainEnv = \cf4 CtkBuffer\cf2 .env(size: 512, env: \cf4 Env\cf2 ([0.001, 1, 0.01, 0.001], [0.001, 0.70, 0.299], \cf5 \\exp\cf2 ));\
+\
+spectAmpArray = [1, 0.85, 0.65, 0.45, 0.2, 0.1, 0.1, 0.2, 0.1];\
+\
+grainCloud = \cf4 CtkSynthDef\cf2 (\cf5 \\grainygrain\cf2 , \{\cf4 arg\cf2  dur, grainPerSec, grainLengthMult, cloudAmpEnv, grainMinFreq, grainMaxFreq, ringPower, grainEnv, grainAmp, pan, id = 1, seed = 120;\
+	\cf4 var\cf2  grains, env, freq, trigger, panPath;\
+	\cf4 RandID\cf2 .kr(id);\
+	\cf4 RandSeed\cf2 .kr(1, seed);\
+	trigger = \cf4 Dust\cf2 .ar(grainPerSec);\
+	panPath = \cf4 Line\cf2 .kr(0, pan, dur / 2);\
+	env = cloudAmpEnv;\
+	\
+	freq = \cf4 TRand\cf2 .ar(grainMinFreq, grainMaxFreq, trigger);\
+	grains = \cf4 GrainSin\cf2 .ar(2, trigger, grainPerSec.reciprocal * grainLengthMult, freq, panPath, envbufnum: grainEnv, mul: grainAmp);\
+		\
+	\cf4 Out\cf2 .ar(0, ((grains ** ringPower) * env));\
+\});\
+\
+score.add(bufferGrainEnv);\
+\
+\cf3 //There's probably a more compact way to code this, but the effect of these functions is that of two different sets of grains coming at the listener head on and then splitting to either ear.//\cf2 \
+\
+grainCloud1Func = \{\cf4 arg\cf2  starttime, duration, grainPerSec, grainLengthMult, startAmp, endAmp, minStart, minEnd, maxStart, maxEnd, grainAmp, ringPower;\
+\
+2.do\{\cf4 arg\cf2  panInc;\
+9.do\{\cf4 arg\cf2  inc;\
+	score.add(\
+grainCloud.new(starttime, duration).dur_(duration).grainPerSec_(grainPerSec).grainLengthMult_(grainLengthMult)\
+.cloudAmpEnv_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([startAmp, endAmp], [1], \cf5 \\exp\cf2 ), timeScale: duration))\
+.grainMinFreq_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([minStart * inc , minEnd * inc], [1], \cf5 \\exp\cf2 )), timeScale: duration)\
+.grainMaxFreq_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([maxStart * inc , maxEnd * inc], [1], \cf5 \\exp\cf2 )), timeScale: duration)\
+.grainEnv_(bufferGrainEnv)\
+.grainAmp_(grainAmp.dbamp * spectAmpArray.at(inc)).ringPower_(ringPower).pan_((-1) ** panInc).id_(1).seed_(40),\
+\
+grainCloud.new(starttime, duration).dur_(duration).grainPerSec_(grainPerSec).grainLengthMult_(grainLengthMult)\
+.cloudAmpEnv_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([startAmp, endAmp], [1], \cf5 \\exp\cf2 ), timeScale: duration))\
+.grainMinFreq_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([minStart, minEnd], [1], \cf5 \\exp\cf2 )), timeScale: duration)\
+.grainMaxFreq_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([maxStart, maxEnd], [1], \cf5 \\exp\cf2 )), timeScale: duration)\
+.grainEnv_(bufferGrainEnv)\
+.grainAmp_(grainAmp.dbamp * spectAmpArray.at(inc)).ringPower_(ringPower).id_(2).seed_(50)\
+\
+)\}\}\};\
+\
+\
+grainCloud2Func = \{\cf4 arg\cf2  starttime, duration, grainPerSec, grainLengthMult, startAmp, middleAmp, endAmp, minStart, minMid, minEnd, maxStart, maxMid, maxEnd, grainAmp, ringPower;\
+\
+2.do\{\cf4 arg\cf2  panInc;\
+9.do\{\cf4 arg\cf2  inc;\
+	score.add(\
+grainCloud.new(starttime, duration).dur_(duration).grainPerSec_(grainPerSec).grainLengthMult_(grainLengthMult)\
+.cloudAmpEnv_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([startAmp, middleAmp, middleAmp, endAmp, 0.001], [0.4, 0.1, 0.49, 0.01], \cf5 \\exp\cf2 ), timeScale: duration))\
+.grainMinFreq_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([minStart * inc , minMid * inc , minEnd * inc], [0.5, 0.5], \cf5 \\exp\cf2 ), timeScale: duration))\
+.grainMaxFreq_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([maxStart * inc , maxMid * inc, maxEnd * inc], [0.5, 0.5], \cf5 \\exp\cf2 ), timeScale: duration))\
+.grainEnv_(bufferGrainEnv)\
+.grainAmp_(grainAmp.dbamp * spectAmpArray.at(inc)).ringPower_(ringPower).pan_((-1) ** panInc).id_(1).seed_(40),\
+\
+grainCloud.new(starttime, duration).dur_(duration).grainPerSec_(grainPerSec).grainLengthMult_(grainLengthMult)\
+.cloudAmpEnv_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([startAmp, middleAmp, middleAmp, endAmp, 0.001], [0.4, 0.1, 0.499, 0.001], \cf5 \\exp\cf2 ), timeScale: duration))\
+.grainMinFreq_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([minStart * inc , minMid * inc , minEnd * inc], [0.5, 0.5], \cf5 \\exp\cf2 ), timeScale: duration))\
+.grainMaxFreq_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([maxStart * inc , maxMid * inc, maxEnd * inc], [0.5, 0.5], \cf5 \\exp\cf2 ), timeScale: duration))\
+.grainEnv_(bufferGrainEnv)\
+.grainAmp_(grainAmp.dbamp * spectAmpArray.at(inc)).ringPower_(ringPower).pan_((-1) ** panInc).id_(2).seed_(50)\
+\
+\
+)\}\}\};\
+\
+grainCloud1Func.value(167.0, 2.5, 4, 7, 1, 0.001, 600, 100, 600, 100, -12, 1.5);\
+grainCloud1Func.value(10.72 + 166, 4, 4, 7, 1, 0.001, 800, 70, 800, 70, -12, 1.2);\
+grainCloud1Func.value(20.44 + 166, 6.5, 4, 7, 1, 0.001, 1200, 50, 1200, 50, -18, 1.0);\
+grainCloud1Func.value(27.64 + 166, 10, 4, 7, 1, 0.001, 1500, 40, 1600, 40, -24, 0.8);\
+grainCloud1Func.value(34.12 + 166, 14, 4, 7, 1, 0.001, 1800, 35, 2000, 35, -48, 0.5);\
+grainCloud1Func.value(38.92 + 166, 13.28, 4, 7, 1, 0.001, 2000, 35, 2000, 35, -76, 0.4);\
+\
+\
+grainCloud2Func.value(43.24 + 166, 8.95, 5, 7, 0.8, 0.2, 1, 2000, 20, 2200, 2000, 20, 2200, -96, 0.3);\
+\
+\
+\cf3 //This "wubba" instrument is just meant to thicken the texture. Kind of like cornstarch.//\cf2 \
+\
+wubbaBuffer = \cf4 CtkBuffer\cf2 .buffer(512).sine3 (0, 1, 1, 1,\
+	1, 1, 0,\
+	2, 0.85, 0,\
+	3, 0.65, 0,\
+	4, 0.45, 0,\
+	5, 0.2, 0,\
+	6, 0.1, 0);\
+		\
+	wubba = \cf4 CtkSynthDef\cf2 (\cf5 \\wubba\cf2 , \{\cf4 arg\cf2  wubbaFreq, wubbaAmp, wubbaDur, wubbaModFreq, wubbaModIndex, wubbaNoiseHertz, wubbaNoiseLower, wubbaNoiseUpper, wubbaBuffer;\
+		\cf4 var\cf2  osc, env, mod, noiseMod, deviation;\
+		deviation = wubbaModFreq * wubbaModIndex;\
+		env = \cf4 EnvGen\cf2 .kr(\cf4 Env\cf2 ([0.001, 1], [wubbaDur], \cf5 \\exp\cf2 ));\
+		mod = \cf4 SinOsc\cf2 .ar(wubbaModFreq, 0, deviation);\
+		noiseMod = \cf4 SinOsc\cf2 .ar(\cf4 LFNoise0\cf2 .ar(wubbaNoiseHertz).range(wubbaNoiseLower, wubbaNoiseUpper), 0, wubbaAmp);\
+		osc = \cf4 Osc\cf2 .ar(wubbaBuffer,(wubbaFreq + mod) * noiseMod, 0, wubbaAmp);\
+		\cf4 Out\cf2 .ar(0, \cf4 Pan2\cf2 .ar(osc * env, 0));\
+	\});\
+	\
+	score.add(wubbaBuffer);\
+	\
+	wubbaFunc = \{\cf4 arg\cf2  starttime, freq, amp, duration, modFreq, modIndex, noiseHertz, noiseLower, noiseUpper;\
+	\
+	score.add(\
+	wubba.new(starttime, duration).wubbaFreq_(freq).wubbaAmp_(amp.dbamp).wubbaDur_(duration).wubbaModFreq_(modFreq).wubbaModIndex_(modIndex).wubbaNoiseHertz_(noiseHertz).wubbaNoiseLower_(noiseLower).wubbaNoiseUpper_(noiseUpper).wubbaBuffer_(wubbaBuffer);\
+	)\};\
+	\
+	wubbaFunc.value(20.44 + 166, 256, -9, 31.75, 10, 80, 100, 50, 800);\
+	\
+\
+	\
+\cf3 //Not gonna lie: this is definitely my favorite instrument. Turns out when you push the grainsPerSec parameter really high and use decreasing frequency envelopes, you get something kind of like a snare drum being shot at.//\cf2 \
+\
+bufferGrainShot = \cf4 CtkBuffer\cf2 .env(size: 512, env: \cf4 Env\cf2 ([0.001, 1, 0.01, 0.001], [0.001, 0.70, 0.299], \cf5 \\exp\cf2 ));\
+\
+grainShot = \cf4 CtkSynthDef\cf2 (\cf5 \\grainshot\cf2 , \{\cf4 arg\cf2  dur, grainPerSec, grainLengthMult, grainMinFreq, grainMaxFreq,\
+	grainEnv, grainAmp, pan, id = 1, seed = 120;\
+	\cf4 var\cf2  grains, env, freq, trigger, panPath;\
+	\cf4 RandID\cf2 .kr(id);\
+	\cf4 RandSeed\cf2 .kr(1, seed);\
+	trigger = \cf4 Dust\cf2 .ar(grainPerSec);\
+	panPath = \cf4 Line\cf2 .kr(0, pan, dur / 2);\
+	env = \cf4 EnvGen\cf2 .kr(\cf4 Env\cf2 ([0.001, 1, 0.001], [0.005, dur - 0.005], \cf5 \\exp\cf2 ));\
+	\
+	freq = \cf4 TRand\cf2 .ar(grainMinFreq, grainMaxFreq, trigger);\
+	grains = \cf4 GrainSin\cf2 .ar(2, trigger, grainPerSec.reciprocal * grainLengthMult, freq, panPath, envbufnum: grainEnv, mul: grainAmp);\
+	\cf4 Out\cf2 .ar(0, grains * env);\
+\});\
+\
+score.add(bufferGrainShot);\
+\
+2.do\{\cf4 arg\cf2  panInc;\
+	\
+12.do\{\cf4 arg\cf2  inc;\
+	score.add(\
+\
+grainShot.new(52.0 + 166, 3).dur_(3).grainPerSec_(3000).grainLengthMult_(0.8)\
+.grainMinFreq_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([1000 * inc, 100 * inc], [1], \cf5 \\exp\cf2 ), timeScale: 3.0))\
+.grainMaxFreq_(\cf4 CtkControl\cf2 .env(\cf4 Env\cf2 ([1000 * inc, 100 * inc], [1], \cf5 \\exp\cf2 ), timeScale: 3.0))\
+.grainEnv_(bufferGrainShot)\
+.grainAmp_(-10.5.dbamp).pan_((-1) ** panInc).id_(1).seed_(41)\
+)\}\};\
+\
+score.write(\cf6 "~/Desktop/test.aiff"\cf2 .standardizePath, options: 
+\f1\fs24 \cf4 ServerOptions\cf2 .new.maxNodes_(1024 * 4).memSize_(32768).numOutputBusChannels_(2));
+\f0\fs18 \
+	\
+)\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf2 \
+\
+\
+\
+\
+\
+\
+\
+\
+}

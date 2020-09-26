@@ -1,0 +1,10 @@
+(
+  name: "tongues",
+  summary: "phased sample grains plus filters",
+  version: "1.0.0",
+  schelp: "tongues-notes",
+  dependencies: [],
+  license: "GPL",
+  copyright: "jms@wtkns 2020"
+)
+

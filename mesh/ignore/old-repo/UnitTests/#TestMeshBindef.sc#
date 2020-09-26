@@ -1,0 +1,72 @@
+TestMeshBindef : UnitTest {
+	var meshBindef;
+	var server;
+	var cond;
+
+	setUp {
+		"Setting Up for Tests".postln;
+		meshBindef=MeshBindef.new(\testBindef);
+		cond = Condition.new;		
+	}
+
+	bootLocalServer {
+		Server.default = Server.local;
+		server = Server.default;
+		server.reboot;
+		server.doWhenBooted({
+			cond.unhang
+		});
+	}
+
+
+	
+	addMonoSynthDef { |synthDefName=\test|
+
+		synthDefName = synthDefName.asSymbol;
+
+		SynthDef(synthDefName, {|
+			freq = 440, out |
+
+			Out.ar(out,
+				SinOsc.ar(freq, 0, 0.2))
+		}).add;
+				
+	}
+
+	tearDown {
+		"Tearing down".postln;
+		server.free;
+		meshBindef.free;
+	}
+
+	test_meshBindef {
+		"Running Tests:".postln;
+
+		this.bootLocalServer;		
+		cond.hang; // wait until server is booted
+		
+		this.makeTestSynthDef(\test2);
+		this.synthDefExists(\test2);
+		
+		this.meshBindefIsMeshBindef(meshBindef);
+		this.serverIsRunning(server);
+			
+		//		this.meshBindefIsMeshBindef("notBindef");		
+		"Tests Completed!".postln;
+	}
+
+	synthDefExists {|synthDefName=\test|
+		synthDefName=synthDefName.asSymbol;		
+		SynthDescLib.global.at(synthDefName);
+		"synthDef Exists".postln		
+	}
+
+	meshBindefIsMeshBindef{|bindefToTest|
+		this.assert(bindefToTest.isKindOf(MeshBindef))
+	}
+
+	serverIsRunning{|serverToTest|
+		this.assert(serverToTest.serverRunning)
+	}
+
+}

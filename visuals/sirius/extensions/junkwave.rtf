@@ -1,0 +1,14 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Candara;}
+{\colortbl;\red255\green255\blue255;\red191\green0\blue0;\red0\green0\blue191;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs44 \cf2 		domain.animae.do(\{ arg part, j;\
+			part.position = Point.new(j*(domain.bounds.x/10), ((domain.bounds.y/2)+2*j ));\
+			part.color = Color.rand;\cf0 \
+			\cf2 part.visible = 1/(j%4);\cf0 \
+\cf2 			part.strategy = \\wave;\
+			part.size = Point.new(100,100);\
+			part.velocity = \cf0  \cf3 Point\cf0 .new(10,30);\
+\
+		\});}

@@ -1,0 +1,19 @@
+TITLE:: MeshHostManager
+summary:: A stack of Mesh environments and associated networking components.
+categories:: Mesh, Live Coding
+related:: Guides/Mesh, Classes/Mesh, Classes/MeshHostManager, Classes/Meshall, Classes/MeshHost, Classes/MeshHostAddr, Guides/OSC_Communication
+
+DESCRIPTION::
+MeshHostManager is the interface class for MeshHostsManager.
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new MeshHostManager.
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

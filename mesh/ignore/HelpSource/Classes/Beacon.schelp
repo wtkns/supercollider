@@ -1,0 +1,12 @@
+TITLE:: Beacon
+summary:: A stack of Mesh environments and associated networking components.
+categories:: Mesh, Live Coding
+related:: Guides/Mesh, Classes/Mesh, Classes/MeshHostManager, Classes/Meshall, Classes/MeshHost, Classes/MeshHostAddr, Guides/OSC_Communication
+
+DESCRIPTION::
+
+EXAMPLES::
+
+code::
+(some example code)
+::

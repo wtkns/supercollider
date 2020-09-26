@@ -1,0 +1,39 @@
+﻿Interaction of individual efforts a participant or not 
+ Always existedNAME HERE
+manifesto
+
+conceptual reasoning OR why networked music?
+unpredictable results or weather systems
+philosophical and aesthetic resonance
+dissolving personhood and intention
+actors embedded in a network
+simultaneously an outsider/witness and creator
+composition and sound creation as processes
+the discovery of 'meaningful' relationships between sounds and structures
+'meaningful' may or may not refer to conceptual and/or aesthetic approaches
+development of novel methods of understanding conceptual approaches to time
+interaction of individual efforts
+nonhierarchical, self-regulating systems, consisting of multiple actors
+generating time for states to emerge
+simultaneous shared source, context, concrete idea
+how an individual responds to an event differently; subjectivity
+anti-humanism
+
+specifications:
+open membership
+expandable/contractible to accommodate number of users
+in performance, performers can be present or not present, a participant or not
+supercollider based, open source and consistent between participating computers
+
+ideas
+data from an outside source
+feedback
+arbitrary
+seed
+solipsism
+perception of a thing either invents the thing OR it always existed
+
+quotes:
+"i think this is just from the support documentation"
+“don't make me get up to look at your computer screen”
+

@@ -1,0 +1,12 @@
+includePaths:
+    -   /Users/james/Library/Application Support/SuperCollider/downloaded-quarks/XML
+    -   /Users/james/Library/Application Support/SuperCollider/downloaded-quarks/MathLib
+    -   /Users/james/Library/Application Support/SuperCollider/downloaded-quarks/Utopia
+    -   /Users/james/Library/Application Support/SuperCollider/downloaded-quarks/FileLog
+    -   /Users/james/Library/Application Support/SuperCollider/downloaded-quarks/Ctk
+    -   /Users/james/git/wtkns/solo/Classes
+    -   /Users/james/Library/Application Support/SuperCollider/downloaded-quarks/Tendency
+    -   /Users/james/Library/Application Support/SuperCollider/downloaded-quarks/miSCellaneous_lib
+excludePaths:
+    []
+postInlineWarnings: false

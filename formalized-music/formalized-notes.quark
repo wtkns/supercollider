@@ -1,0 +1,10 @@
+(
+  name: "formalized-notes",
+  summary: "Study Notes for Xenakis Formalized music.",
+  version: "1.0.0",
+  schelp: "formalized-notes",
+  dependencies: [],
+  license: "GPL",
+  copyright: "jms@wtkns 2020"
+)
+

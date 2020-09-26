@@ -1,0 +1,12 @@
+(
+	\name: 			"Transactor",
+	\path: 			"Transactor", // path relative to the root Quarks folder
+	\summary:		"framework for distributed transactions (RMI)",
+	\version:		"0.0",
+	\schelp:        "Guides/Transactor",
+	\dependencies:   ["Utopia", "UnitTesting", "wslib", "Modality-toolkit", "FileLog"],
+	\author: 		"Mesh Collaborative",
+	\country: 		"USA",
+	\since: 		"2017",
+	\status:		"alpha"
+)

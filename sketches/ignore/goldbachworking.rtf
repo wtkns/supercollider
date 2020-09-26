@@ -1,0 +1,89 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf230
+{\fonttbl\f0\fnil\fcharset0 Candara;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red0\green0\blue191;\red96\green96\blue96;
+\red191\green0\blue0;\red0\green0\blue191;\red0\green115\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs48 \cf2 (\
+	\
+		\cf3 var\cf2  isEven = \{\cf3 arg\cf2  n;\
+		(n%2==0);\};\
+		\
+		\cf3 var\cf2  getDur = \{\cf3 arg\cf2  dur;\
+			(dur / (variation / piecelength));\
+		\};\
+		\
+		\cf3 var\cf2  getFactors = \{ \cf3 arg\cf2  n;\
+			if(n.even)\
+				\{ \
+				  forBy (2, sqrt(n), 2, \
+				  	\{ \cf3 arg\cf2  i; \
+					  	if (n%i==0 && isEven.value(n/i))\
+					  	\{factors = factors.add([i,n/i])\}\
+					\}\
+				  );				\
+				\}\
+				\{ \cf4 "the number is odd"\cf2 \};\
+		factors\};\
+		\
+		\cf3 var\cf2  getPrimes = \{ \cf3 arg\cf2  n;\
+			\cf3 var\cf2  p = \cf3 Array\cf2 .series(n, 2, 1); \cf5 // fill array p with [2 through n]\cf2 \
+			\cf3 var\cf2  tempPrimes = \cf3 Array\cf2 .new();\
+			while ( \{ p.size > 0 \}, \{ \
+				x = p[0];\
+				tempPrimes = tempPrimes.add(x);\
+				p.removeAllSuchThat(\{ \cf3 arg\cf2  item, i; item % x == 0 \});\
+			 \});\
+		tempPrimes\};\
+		\
+		\cf3 var\cf2  getGoldbach = \{ \cf3 arg\cf2  n;\
+			\cf3 var\cf2  testPrimes = \cf3 Array\cf2 .newFrom(primes);\
+			\cf3 var\cf2  results = \cf3 Array\cf2 .new();\
+			for (0, testPrimes.size-1, \{\cf3 arg\cf2  i;\
+				if (testPrimes.includes(n-testPrimes[i]),\
+					\{results = results.add([testPrimes[i], n-testPrimes[i]])\}\
+				);\
+			\});\
+		results \};	\
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf6 var\cf0  variation = 680;\
+\cf6 var\cf0  piecelength = 20;\
+\cf6 Server\cf0 .default = s = \cf6 Server\cf0 .internal.boot;\
+s.scope;\
+s.waitForBoot(\{\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf2 		\
+		\cf3 var\cf2  factors = getFactors.(variation).postln;\
+		\cf3 var\cf2  primes = getPrimes.(variation).postln;\
+		\cf3 var\cf2  partitions = getGoldbach.(variation).postln;\
+]		\cf3 var\cf2  data, routine, sd;\
+		\
+		sd = \cf3 CtkSynthDef\cf2 (\cf7 \\note\cf2 , \{\cf3 arg\cf2  freq, amp, dur;\
+			\cf3 var\cf2  env;\
+			env = \cf3 EnvGen\cf2 .kr(\
+				\cf3 Env\cf2 ([0, 1, 1, 0], [0.1, 0.8, 0.1], \cf7 \\sin\cf2 ), \
+				timeScale: dur);\
+			\cf3 Out\cf2 .ar(0, \cf3 Pan2\cf2 .ar(\
+				\cf3 SinOsc\cf2 .ar(freq, 0, amp) * env\
+				)\
+			)\
+		\});\
+		\
+		routine = \cf3 Routine\cf2 (\{\
+			partitions.do(\{\cf3 arg\cf2  thisData, i;\
+				\cf3 var\cf2  freq, dur;\
+				#freq, dur = thisData;\
+				dur = \cf0 getDur.value(dur).postln;\cf2 \
+				\cf5 // see how the data is iterated over and parsed!\cf2 \
+				[thisData, freq, dur].postln;\
+				sd.note(0.2, \cf0 dur\cf2 ).freq_(freq).dur_(\cf0 dur\cf2 ).amp_(0.3).play;\
+			\})\
+		\});\
+		\
+\
+		routine.play;\
+\
+\}) \cf5 // end wait for boot	\cf2 \
+)}

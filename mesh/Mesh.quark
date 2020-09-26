@@ -1,0 +1,12 @@
+(
+	\name: 			"Mesh",
+	\path: 			"Mesh", // path relative to the root Quarks folder
+	\summary:		"framework for collaborative live coding",
+	\version:		"0.0",
+	\schelp:        "Guides/Mesh",
+	\dependencies:   ["UnitTesting"],
+	\author: 		"Mesh Collaborative",
+	\country: 		"USA",
+	\since: 		"2016",
+	\status:		"alpha"
+)

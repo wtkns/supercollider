@@ -1,0 +1,1 @@
+docker run -t -i --publish 1234:1234 --name scdock --volume=/dev/shm:/dev/shm:rw --user=1000 --rm scdock

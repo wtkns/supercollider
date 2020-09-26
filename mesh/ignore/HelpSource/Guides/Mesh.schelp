@@ -1,0 +1,33 @@
+TITLE:: Mesh Guide
+categories:: Mesh, Live Coding, Networking
+summary:: Simple framework for creating network-based collaborative performance environment.
+related:: Guides/OSC_Communication
+
+STRONG::Mesh Collaborative Framework::
+
+An initial guide to creating a collaborative live-coding network environment.
+
+SECTION:: Introduction
+
+The Mesh is a framework for the creation of realtime network performance environments, and this SC implementation builds upon the work of the Utopia Quark, to whom many thanks are owed.
+
+A STRONG::Mesh:: should be conceived of as a shared performance environment,  composed of STRONG::Vertexes::, each vertex having one or more STRONG::Ports::, which may be connected to other ports via STRONG::Patches::.
+In this way it can be compared to a modular synthesizer, but one which is extensible to include a wide range of different types of Vertexes, providing a vast number of custom inputs, outputs, and processing functions.
+
+Although the current implementation is primarily Supercollider, the Mesh is being imagined as an abstract messaging protocol and nameSpace for connecting a wide variety of devices, hardware controllers, IOT, etc.
+
+
+
+image::image1.png::
+
+SECTION:: Basic Building Blocks
+
+The central class of Mesh is link::Classes/Mesh::.
+The Class provides an interface to create and access a stack of link::Classes/Mesh:: instances, which represent shared environments, each containing a collection of Classes/Vertex es
+
+SECTION:: Creating a Mesh
+
+definitionlist::
+     ## Create a Mesh
+     || Call the Mesh class, and give it a name: code::Mesh(\mesh1)::
+::

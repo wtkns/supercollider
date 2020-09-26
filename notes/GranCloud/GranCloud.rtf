@@ -1,0 +1,1068 @@
+{\rtf1\mac\ansicpg10000\cocoartf102
+{\fonttbl\f0\fswiss\fcharset77 Helvetica;\f1\fswiss\fcharset77 Helvetica-Bold;\f2\fswiss\fcharset77 ArialMT;
+\f3\fnil\fcharset77 Monaco;}
+{\colortbl;\red255\green255\blue255;\red191\green0\blue0;\red0\green0\blue191;\red96\green96\blue96;
+\red0\green115\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\fs24 \cf0 Please direct questions, comments, and bug reports to Terry Lee <tlee@tleestudio.com>\
+
+\f1\b\fs36 \
+GranCloud
+\fs26 	
+\f2\b0 		
+\f1\b\fs28 object representing a granular cloud\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\b0\fs18 \cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f1\b\fs28 \cf0 superclass: Object
+\f3\b0\fs18 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f1\b\fs24 \cf0 *new(def, args, center, dev, dist, duration, order, spec, centerSpec, devSpec, distSpec, loop, loopAll, numChannels, timeStretch)\
+\
+	
+\f0\b0 Creates a new object representing a granular cloud.  The arguments to the new method are also instance\
+	variables by the same name, so data may either be passed in as arguments to the new class\
+	method, or a default object may be constructed with no arguments and the instance variables set after\
+	object creation.  See 
+\f1\b How it Works
+\f0\b0  below for more detailed information.
+\f1\b \
+	\
+	def		
+\f0\b0 A grain SynthDef name, a function returning a grain SynthDef name when evaluated, or\
+			or a Stream returning a grain SynthDef name when evaluated. (All SynthDefs used should be\
+			sent to the server externally before the play method is called.)  Any SynthDef may be used\
+			for a grain as long as it can free itself after the duration of the grain is done.\
+			\
+	
+\f1\b args		
+\f0\b0 An array of name/value pairs for grain SynthDef arguments that are the same for every grain.  \
+			Arguments specified in the array are passed to every grain synth node "as is."\
+	\
+	
+\f1\b center
+\f0\b0 	An IdentityDictionary of name/value pairs defining center values for grain parameters that \
+			change from grain to grain.  Names correspond to grain SynthDef argument names.  Values \
+			may be numbers, functions returning a numbers, streams returning numbers, or Env \
+			objects.  A center value named 
+\f1\b \\rate
+\f0\b0  defining the grain rate (number of seconds between grain \
+			initialization times) is required.  All other values should correspond to grain SynthDef\
+			argument names.\
+			\
+	
+\f1\b dev		
+\f0\b0 An IdentityDictionary of name/value pairs defining a deviation from the center value for grain\
+			parameters defined in the 
+\f1\b center 
+\f0\b0 IdentityDictionary.   Names correspond to grain SynthDef\
+			argument names.  Values may be numbers, a functions returning a numbers, streams returning \
+			numbers, or Env objects.  Grain deviation values are optional and need only be set for \
+			parameter where a deviation from grain to grain is desired.\
+						\
+	
+\f1\b dist		
+\f0\b0 An IdentityDictionary of name/value pairs defining distribution functions used when calculating \
+			deviation values for each grain.  Names correspond to grain SynthDef argument names.  \
+			Values may either be the name of a unary method (e.g. \\rand2, \\sum3rand) that is understood by the object returned by the 
+\f1\b dev 
+\f0\b0 calculation,  or the value may be a user defined function that \
+			receives the 
+\f1\b dev
+\f0\b0  value as the first argument and returns a number.  Dist values are ignored if there is no 
+\f1\b dev 
+\f0\b0 value set for that grain parameter.  Defaults to \\rand2.			\
+	
+\f1\b duration
+\f0\b0 	The duration, in seconds, that the cloud should play.  The cloud will stop playing after this \
+			duration.  If 
+\f1\b inf 
+\f0\b0 is used, the cloud will play indefinitely until the stop method is called.  Defaults\
+			to inf.\
+			\
+	
+\f1\b order	
+\f0\b0 An array of parameter names specifying the order in which grain parameters defined in the \
+			
+\f1\b center
+\f0\b0 , 
+\f1\b dev
+\f0\b0 , and 
+\f1\b dist
+\f0\b0  IdentityDictionaries should be processed.  This allows functions to be \
+			used as 
+\f1\b center
+\f0\b0 , 
+\f1\b dev
+\f0\b0 , and 
+\f1\b dist
+\f0\b0  values to create dependencies between grain parameters.  \
+			Only parameter names that are involved in the dependency need to be included in the Array.  \
+			Circular references will not work properly.\
+			\
+	
+\f1\b spec	
+\f0\b0 An optional IdentityDictionary of name/value pairs defining ControlSpec objects used to\
+			constrain the result of the 
+\f1\b center
+\f0\b0 /
+\f1\b dev
+\f0\b0 /
+\f1\b dist
+\f0\b0  calculation to values allowed by the ControlSpec.\
+			This can be used to limit results to a specified range or to constrain values to a step size.  \
+			\
+	 
+\f1\b centerSpec	
+\f0\b0 An optional IdentityDictionary of name/value pairs defining ControlSpec objects used to\
+	 			constrain the result of the 
+\f1\b center 
+\f0\b0 value before the 
+\f1\b dev
+\f0\b0 /
+\f1\b dist
+\f0\b0  value is applied.\
+	 			\
+	 
+\f1\b devSpec		
+\f0\b0 An optional IdentityDictionary of name/value pairs defining ControlSpec objects used to\
+	 			constrain the result of the 
+\f1\b dev 
+\f0\b0 value before evaluating the 
+\f1\b dist
+\f0\b0  function.\
+	 			\
+	
+\f1\b  distSpec		
+\f0\b0 An optional IdentityDictionary of name/value pairs defining ControlSpec objects used to\
+	 			constrain the result of the 
+\f1\b dev/dist 
+\f0\b0 calculation before adding it to the 
+\f1\b center 
+\f0\b0 value.\
+	 			\
+	 
+\f1\b loop			
+\f0\b0 An optional IdentityDictionary of loop point arrays (same format as descirbed under\
+	 			the 
+\f1\b loopAll 
+\f0\b0 description) that can be specified for individual grain arguments that change \
+	 			over time (such as Env objects). \
+	 \
+	 
+\f1\b loopAll		
+\f0\b0 An optional array defining a time based loop applied to all argument calculations.  The\
+	 			in the array should be in the format 
+\f1\b [ loopStart, loopEnd, numLoops ]
+\f0\b0 .  
+\f1\b loopEnd
+\f0\b0  indicates\
+	 			a point of time at which grain calculations will loop back in time to the 
+\f1\b loopStart
+\f0\b0  point. Both\
+	 			are specified in seconds.  
+\f1\b numLoops
+\f0\b0  is the nubmer of times that it will loop before going\
+	 			on.  
+\f1\b inf
+\f0\b0  is a valid value for 
+\f1\b numLoops
+\f0\b0 .\
+	 \
+	 
+\f1\b numChannels		
+\f0\b0 The number of channels of output the grain SynthDef uses.  This is only required if\
+	 				the GranCloud object is going to be used in a GranCloudGUI.\
+	 \
+	 t
+\f1\b imeStretch
+\f0\b0 		A value that can be modulated to stretch or contract the time calculation applied to \
+	 				time dependent grain argument objects (such as Env objects).  A value greater than\
+	 				one slows the cloud down.  A value less than one speeds the cloud up.
+\f1\b \
+	\
+	\
+*preset(server, preset, bufnum)\
+\
+	
+\f0\b0 Create a new GranCloud object based on a default set of parameters.  Also sends the grain \
+	SynthDef to the server, so the server should be fully booted before this method is called.\
+	Available presets are listed below.  
+\f1\b \
+	\
+	server	
+\f0\b0 The server object used to render the cloud.  Server should be fully booted when preset method\
+			is called.
+\f1\b \
+	\
+	preset	
+\f0\b0 The name of the preset to use.
+\f1\b \
+	\
+	bufnum	
+\f0\b0 For presets that granulate a buffered sound, a buffer number for a pre-allocated and filled buffer.
+\f1\b 	\
+	\
+Available Presets\
+\
+	
+\f0\b0 The following presets are build into the GranCloud class.  Users may add their own presets by adding \
+	them to the 
+\f1\b presets
+\f0\b0  class variable, which contains an IdentityDictionary of data for each 
+\f1\b \
+\
+	sine_grain	
+\f0\b0 Sine waves, wrapped in pseudo-gaussian envelopes, and panned to 2 channels.\
+		\
+		
+\f1\b Grain Arguments:
+\f0\b0 \
+		\\
+\f1\b rate 	
+\f0\b0 Grain rate, number of seconds between start of each grain.\
+		\\
+\f1\b dur		
+\f0\b0 Grain duration in seconds.\
+		\\
+\f1\b freq		
+\f0\b0 Frequency of the sine wave in Hz.\
+		
+\f1\b \\amp
+\f0\b0 	Amplitude of the envelope (0-1)\
+		
+\f1\b \\pan		
+\f0\b0 Grain Pan position
+\f1\b \
+	\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\b0\fs18 \cf0 		\cf2 // execute sequentially\cf0 \
+		s = \cf3 Server\cf0 .local.boot;  \
+		\
+		a = \cf3 GranCloud\cf0 .preset(s, \cf4 "sine_grain"\cf0 ); // wait until server is fully booted\
+		a.play;\
+		a.center[\cf5 \\freq\cf0 ] = 220;  // change freq\
+		a.putEnv(\cf5 \\freq\cf0 , \cf3 Env\cf0 .new([ 50, 1100, 200, 660, 300 ], [ 4, 1, 0.5, 5 ], \cf5 'exponential'\cf0 ));\
+		a.center[\cf5 \\freq\cf0 ] = \cf3 Pseq\cf0 (\cf3 Array\cf0 .fill(20, \{ 50.exprand(1000) \}), \cf3 inf\cf0 ).asStream;\
+		a.center[\cf5 \\rate\cf0 ] = 0.5;  a.center[\cf5 \\dur\cf0 ] = 1.0;     // slow down the grains\
+		a.center[\cf5 \\dur\cf0 ] = 0.02; a.center[\cf5 \\rate\cf0 ] = 0.005;   // speed up the grains\
+		a.dev[\cf5 \\rate\cf0 ] = 0.01;\
+		a.dev[\cf5 \\freq\cf0 ] = 500;\
+		a.dev[\cf5 \\pan\cf0 ] = 2.0;\
+		a.dev[\cf5 \\pan\cf0 ] = 0.2;\
+		a.center[\cf5 \\pan\cf0 ] = -0.5;\
+		a.center[\cf5 \\pan\cf0 ] = \cf3 Env\cf0 .new([ -0.8, 0.8, 0 ], [ 4, 2 ]); a.reset(0); // reset playTime to 0\
+		a.stop;
+\f1\b\fs24 \
+	\
+	glisson		
+\f0\b0 Sweeping sine waves, wrapped in pseudo-gaussian envelopes, and panned to 2 \
+				channels.
+\f1\b \
+	\
+	
+\f0\b0 	
+\f1\b Grain Arguments:
+\f0\b0 \
+		\\
+\f1\b rate 		
+\f0\b0 Grain rate, number of seconds between start of each grain.\
+		\\
+\f1\b dur			
+\f0\b0 Grain duration in seconds.\
+		\\
+\f1\b startFreq,	
+\f0\b0 Start frequency of the sine wave sweep in Hz.\
+		\\
+\f1\b endFreq
+\f0\b0 ,		End frequency of the sine wave sweep in Hz.\
+		
+\f1\b \\amp
+\f0\b0 		Amplitude of the envelope (0-1)\
+		
+\f1\b \\pan			
+\f0\b0 Grain Pan position
+\f1\b \
+
+\f3\b0\fs18 \
+		a = \cf3 GranCloud\cf0 .preset(s, \cf4 "glisson"\cf0 );\
+		a.play;\
+		a.center[\cf5 \\rate\cf0 ] = 0.5;  a.center[\cf5 \\dur\cf0 ] = 0.5;	\
+		a.center[\cf5 \\startFreq\cf0 ] = 50;\
+		a.center[\cf5 \\rate\cf0 ] = 0.05;  a.center[\cf5 \\dur\cf0 ] = 0.1;	\
+		a.center[\cf5 \\startFreq\cf0 ] = 3000; a.center[\cf5 \\endFreq\cf0 ] = 30;\
+		a.center[\cf5 \\startFreq\cf0 ] = 200;\
+		a.center[\cf5 \\endFreq\cf0 ] = 200;\
+		a.dev[\cf5 \\startFreq\cf0 ] = 0;\
+		a.dev[\cf5 \\endFreq\cf0 ] = 0;\
+		a.dev[\cf5 \\startFreq\cf0 ] = 150;\
+		a.center[\cf5 \\rate\cf0 ] = 0.02;\
+		a.center[\cf5 \\endFreq\cf0 ] = 400;\
+		a.dev[\cf5 \\startFreq\cf0 ] = 50;				\
+		a.stop;
+\f1\b\fs24 \
+			\
+	buf_grain		
+\f0\b0 Granulate a buffered sound.  Segments of the buffer, wrapped in pseudo-gaussian \
+				envelopes, and panned to 2 channels.  Requires a buffer number be profided in the \
+				bufnum argument when initialized.
+\f1\b \
+	\
+		Grain Arguments:
+\f0\b0 \
+		\\
+\f1\b rate 		
+\f0\b0 Grain rate, number of seconds between start of each grain.\
+		\\
+\f1\b dur			
+\f0\b0 Grain duration in seconds.\
+		\\
+\f1\b bufRate		
+\f0\b0 Read rate of the buffer (2 is twice as fast, 0.5 is half)\
+		
+\f1\b \\bufStartPos	
+\f0\b0 Start position of segment in buffer (0 to 1, 0.5 is half way through the buffer)\
+		
+\f1\b \\amp
+\f0\b0 		Amplitude of the envelope (0-1)\
+		
+\f1\b \\pan			
+\f0\b0 Grain Pan position
+\f1\b \
+	\
+	\
+		
+\f3\b0\fs18 b = \cf3 Buffer\cf0 .read(s, \cf4 "sounds/a11wlk01-44_1.aiff"\cf0 );\
+\
+		a = \cf3 GranCloud\cf0 .preset(s, \cf4 "buf_grain"\cf0 , b.bufnum);\
+		a.center[\cf5 \\bufStartPos\cf0 ] = \cf3 Env\cf0 ([ 0, 1, 0, 1, 0 ], [ 3, 0, 1, 6 ]);\
+		a.loop[\cf5 \\bufStartPos\cf0 ] = [ 0, 10, \cf3 inf\cf0  ];\
+		a.play;\
+		a.center[\cf5 \\bufRate\cf0 ] = 2.0;\
+		a.center[\cf5 \\bufRate\cf0 ] = 0.5;\
+		a.putEnv(\cf5 \\bufRate\cf0 , \cf3 Env\cf0 ([ 1, 0.15, 3, 0.75 ], [ 3, 4, 3 ]));\
+		a.dev[\cf5 \\bufRate\cf0 ] = 1.0;
+\f1\b\fs24 \
+				\
+\
+Methods\
+\
+play(server, out, target, offset, addAction)\
+	\
+	
+\f0\b0 Plays the cloud on the server.\
+	
+\f1\b \
+	server		
+\f0\b0 The server on which to render the grains.  Defaults to Server.default.
+\f1\b \
+	\
+	out			
+\f0\b0 Bus number to write the sound out to.  This bus number is passed to the grains in the \
+				out argument of the SynthDef.  Defaults to 0.
+\f1\b \
+	\
+	target		
+\f0\b0 Target group in which the grain synth nodes will be rendered.   Defaults to server's default\
+				group.
+\f1\b \
+	\
+	offset		
+\f0\b0 A time offset to start playing this number of seconds within the cloud.  Defaluts to 0.
+\f1\b \
+	\
+	addAction	
+\f0\b0 Add action for how grain synth nodes are added to the target.  Defaults to \\addToHead.
+\f1\b \
+\
+\
+pause		\
+\
+	
+\f0\b0 Pause cloud playing.  Call again to restart cloud playing.
+\f1\b \
+\
+stop			\
+\
+	
+\f0\b0 Stop a cloud from playing.
+\f1\b \
+\
+reset(time)	\
+	\
+	
+\f0\b0 When called while a cloud is playing, resets the play time to the specified time.
+\f1\b \
+\
+at(name)		\
+\
+	
+\f0\b0 A shortcut for getting argument center values.  
+\f3\fs18 a.center[\cf5 \\name\cf0 ] 
+\f0\fs24 is equivalent to 
+\f3\fs18 a[\cf5 \\name\cf0 ] 
+\f0\fs24 which is \
+	equivalent to
+\f3\fs18  a.at(\cf5 \\name\cf0 ).
+\f1\b\fs24 \
+\
+put(name, value)\
+\
+	
+\f0\b0 A shortcut for setting argument center values.  
+\f3\fs18 a.center[\cf5 \\name\cf0 ] = 100
+\f0\fs24  is equivalent to 
+\f3\fs18 a[\cf5 \\name\cf0 ] = 100
+\f0\fs24 \
+	which is equivalent to 
+\f3\fs18 a.put(\cf5 \\name, 100\cf0 ).
+\f1\b\fs24 \
+\
+putEnv(name, env)\
+\
+	
+\f0\b0 Allows the placement of an Env object in a 
+\f1\b center 
+\f0\b0 value while the cloud is playing, and the envelope\
+	will begin at the moment of placement, rather than in the middle of the envelope (determined by the\
+	playTime).
+\f1\b \
+\
+putDevEnv\
+	\
+	
+\f0\b0 Allows the placement of an Env object in a 
+\f1\b dev 
+\f0\b0 value while the cloud is playing, and the envelope\
+	will begin at the moment of placement, rather than in the middle of the envelope (determined by the\
+	playTime).
+\f1\b \
+	\
+	\
+How it Works\
+\
+	
+\f0\b0 The GranCloud class represents and generates a granular synthesis cloud.  Grains are produced using a\
+	user-defined or preset grain SynthDef.  Any user-defined grain SynthDef may be used provided it knows\
+	how to free itself.  Grain parameters used by the SynthDef are also user-defineable.  \
+	\
+	Data controlling grain parameters and how they change over the life of the cloud may be set in several \
+	different ways.  Parameters that are the same for every grain may be specified in an array of name/value\
+	pairs in the 
+\f1\b args
+\f0\b0  array.  These parameter values are delivered to each grain synth node as is and do\
+	not change with each grain.  \
+	\
+	Parameters that change over time may be defined in the 
+\f1\b center
+\f0\b0 , 
+\f1\b dev
+\f0\b0 , and 
+\f1\b dist 
+\f0\b0 instance variables.  This \
+	allows the user to define a center value, and a deviation from that center that is controlled by a specific\
+	distribution function.  Data for each grain paramer is stored in the center, dev, and dist instance variables\
+	in an IdentityDictionary.  The keys of the dictionary correspond to the SynthDef argument names the data\
+	represents.  The values of the center and dev dictionaries may contain numbers, functions that return\
+	numbers when evaluated, an Env object, or any stream that returns numbers with each call to the "next"\
+	method.  \
+	\
+	Each time a grain is initialized, the rendering engine loops through the argument names in the order \
+	specified in the 
+\f1\b order
+\f0\b0  instance variable.  For each key, it calculates a value for the grain based on the\
+	 value in the dictionary.  If the value in the dictionary is a number, it returns itself.  If it is a function, it \
+	 evaluates the function and returns the result.  If it is an Env, it calls the "at" method passing in the playTime\
+	 to return a numeric value for the envelope at that point in time.  If it is a stream, it returns the next value\
+	 in the stream.  Once the center value is calculated, a deviation value is calculated in the same manner\
+	 based on the value stored for that parameter name in the 
+\f1\b dev 
+\f0\b0 dictionary.   Then the distribution function\
+	 stored in the 
+\f1\b dist
+\f0\b0  dictionary is applied to the dev value to get the actual deviation from the center.  The\
+	 actual deviation is added to the center value to get the actual value for the parameter that will be sent to\
+	 the synth node.  If no 
+\f1\b dev
+\f0\b0  value is defined for a parameter, then the deviation will be zero.  If no 
+\f1\b dist
+\f0\b0  value\
+	 is defined for a parameter, then the "rand2" method will be called on the 
+\f1\b dev
+\f0\b0  value to get the actual \
+	 deviation.\
+	 \
+	 Once all parameters have been calculated for a grain, the synth node is scheduled on the server.  Grains\
+	 are scheduled on the server based on the results of the 
+\f1\b \\rate 
+\f0\b0 parameter in the center/dev/dist\
+	 calculations.  The 
+\f1\b \\rate
+\f0\b0  value is the only required grain parameter, and it must be set in the 
+\f1\b center
+\f0\b0 \
+	 dictionary.  The 
+\f1\b \\rate
+\f0\b0  value defines the amount of time, in seconds, beyond the start of this grain, that the\
+	 next grain should be scheduled for (the amount of time between the start times).  If the 
+\f1\b \\rate 
+\f0\b0 value is less\
+	 than the duration of a grain, then grains will overlap.  \
+	\
+	There is one additional way that values may be set for grain parameters.  Individual grain parameters may\
+	be mapped to control buses using the 
+\f1\b map
+\f0\b0  instance variable.  The 
+\f1\b map
+\f0\b0  variable contains an array of \
+	parameter name/bus index pairs.  When each grain synth node is scheduled, parameters in this array are\
+	mapped to the specifed control buses.\
+	\
+	As a convenience a parameter value named "out" is passed to each synth node specifiying the output\
+	bus given in the "out" parameter of the "play" method, when the cloud was told to play.  This allows the\
+	user to specify what bus to write the sound out for each grain.  Of course to use this, the SynthDef must\
+	have an "out" parameter defined and use it in an Out unit generator.\
+	\
+	For convenience, several presets have been built into the class to initialize common types of GranCloud\
+	objects.  Presets may be used by calling the "preset" class method and specifying the server and preset\
+	name.  The preset class method sends a built in SynthDef to the server, so the server should be fully \
+	booted before the method is called.\
+	\
+	\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f1\b \cf0 Tutorial
+\f0\b0 \
+\
+First make sure the local server is booted.\
+							
+\f3\fs18 \cf2 \
+	// Boot the local server and assign it to variable s.\cf0 \
+	s = \cf3 Server\cf0 .local.boot;\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\fs24 \cf0 Now we define our grain SynthDef and send it to the server.  Most grain defs have some sort of sound input\
+(a sine wave in this case but it could be a PlayBuf or any sound from an audio bus), and an envelope.  The "out"\
+argument specifies the audio bus to write the signal to.  The inputs to the other arguments will be provided by \
+the GranCloud from calculations made on the center and dev values with the same name as the argument. \
+The grain node frees itself when done using the doneAction in the EnvGen.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\fs18 \cf0 \
+	(\
+	\cf3 SynthDef\cf0 (\cf5 \\simple_sinegrain\cf0 , \{ \cf3 arg\cf0  out, dur, freq, amp, pan;\
+		\
+		\cf3 var\cf0  env, sound;\
+		\
+		\cf2 // generate an envelope\cf0 \
+		env   = \cf3 EnvGen\cf0 .kr(\cf3 Env\cf0 .sine(dur, amp), doneAction: 2);\
+		\
+		\cf2 // generate the sound\cf0 \
+		sound = \cf3 FSinOsc\cf0 .ar(freq);\
+		\
+		\cf2 // multiply the envelope by the sound, pan it, and send it to the out bus\cf0 \
+		\cf3 Out\cf0 .ar(out, \cf3 Pan2\cf0 .ar(sound * env, pan))\
+	\
+	\}).send(s);\
+	)\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\fs24 \cf0 The next step is to create a GranCloud object and set the grain attributes.  The \\rate value is required.  \
+All other inputs are user defineable and correspond to the argument names of the grain SynthDef.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\fs18 \cf0 \
+\
+	(\
+	a = \cf3 GranCloud\cf0 .new; // create a new blank instance of GranCloud and store in in variable a.\
+	\
+	\cf2 // set the center values of the grain attributes (using the bracket shortcut)\cf0 \
+	a[\cf5 \\rate\cf0 ] = 0.01;	\cf2 // grain rate in number of seconds between grain start times\cf0 \
+	a[\cf5 \\dur\cf0 ]  = 0.02;	\cf2 // duration of the grain envelope in seconds\cf0 \
+	a[\cf5 \\freq\cf0 ] = 440;	\cf2 // the frequency of the grain waveform in Hertz\cf0 \
+	a[\cf5 \\amp\cf0 ]  = 0.1;	\cf2 // the amplitude of the envelope (0 to 1)\cf0 \
+	a[\cf5 \\pan\cf0 ]  = 0;		\cf2 // a pan position (0 to 1)\cf0 \
+	)\
+	\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\fs24 \cf0 Note that data assignment could have been done more verbosely by:\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\fs18 \cf0 \
+	a.center[\cf5 \\rate\cf0 ] = 0.01;\
+	\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\fs24 \cf0 	or \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\fs18 \cf0 	\
+	a.center.put(\cf5 \\rate\cf0 , 0.01);\
+	\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\fs24 \cf0 I just happen to like the shortcut.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\fs18 \cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\fs24 \cf0 Next we need to tell the GranCloud what SynthDef to use, how long the cloud should play.  Use 
+\f1\b inf
+\f0\b0  to specify\
+an infinite duration.\
+	\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\fs18 \cf0 	(\
+	a.def = \cf5 \\simple_sinegrain\cf0 ;  // name of the SynthDef we defined and sent to the server.\
+	a.duration = \cf3 inf\cf0 ;\
+	)\
+	\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\fs24 \cf0 Now we can play the sound.  The play method has other possible arguments described above, but we \
+will just use the defaults for now.
+\f3\fs18 \
+\
+	\cf2 // play the cloud\cf0 \
+	a.play(s);\
+	\
+	\cf2 // stop the cloud\cf0 \
+	a.stop;\
+\
+
+\f0\fs24 Try a finite duration.  The cloud stops itself after the specified duration.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\fs18 \cf0 	\
+	a.duration = 2;\
+	a.play;\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\fs24 \cf0 Now lets do the same thing we did above, but using a preset.\
+\
+	
+\f3\fs18 \
+	(\
+	\cf2 // create a GranCloud object based on a preset\cf0 \
+	\cf2 // (also sends the SynthDef to the Server, so the Server must be booted first)\cf0 \
+	a = \cf3 GranCloud\cf0 .preset(s, \cf5 'sine_grain'\cf0 );\
+	\
+	\cf2 // set the center values of the grain attributes (using the bracket shortcut)\cf0 \
+	a[\cf5 \\rate\cf0 ] = 0.01;	\cf2 // grain rate in number of seconds between grain start times\cf0 \
+	a[\cf5 \\dur\cf0 ]  = 0.02;	\cf2 // duration of the grain envelope in seconds\cf0 \
+	a[\cf5 \\freq\cf0 ] = 440;	\cf2 // the frequency of the grain waveform in Hertz\cf0 \
+	a[\cf5 \\amp\cf0 ]  = 0.1;	\cf2 // the amplitude of the envelope (0 to 1)\cf0 \
+	a[\cf5 \\pan\cf0 ]  = 0;		\cf2 // a pan position (0 to 1)\cf0 \
+	\
+	a.duration = 4;\
+	\
+	\cf2 // a.def need not be set since it is done when the GranCloud object was created\cf0 \
+	)\
+	\
+	a.play(s);\
+\
+\
+
+\f0\fs24 Notice, this sounds a little different because deviation values were set by default.  Let's clear\
+the default dev values and it will sound like it did before.
+\f3\fs18 \
+	\
+	a.dev = IdentityDictionary.new;\
+	a.play(s); \
+\
+
+\f0\fs24 Okay.  That sound isn't terribly exciting, so lets add some random deviations to the mix.  First set\
+the duration back to inf and start the cloud playing.  Execute line by line to hear the change.
+\f3\fs18 \
+\
+	a.duration = \cf3 inf\cf0 ;\
+	a.play;\
+	\
+	\cf2 // set random deviation values \cf0 \
+	a.dev[\cf5 \\rate\cf0 ] = 0.005;\
+	a.dev[\cf5 \\dur\cf0 ]  = 0.005;\
+	a.dev[\cf5 \\freq\cf0 ] = 40;\
+	a.dev[\cf5 \\amp\cf0 ]  = 0.05;\
+	a.dev[\cf5 \\pan\cf0 ]  = 1.0;\
+\
+	a.stop;\
+\
+
+\f0\fs24 ControlSpecs may also be used with the grain arguements to constrain the final values of the center/dev \
+calculations to the limits of the spec.  ControlSpecs are also important when mapping center or dev values\
+to GUI objects, and they are required when using the cloud with a GranCloudGUI.  See the 
+\f1\b [ControlSpec]
+\f0\b0  and \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f1\b \cf0 [Spec]
+\f0\b0  helpfiles for more information on ControlSpec objects.
+\f3\fs18 \
+\
+	\cf2 // several ways to create ControlSpec objects\cf0 \
+	a.spec[\cf5 \\rate\cf0 ] = \cf3 ControlSpec\cf0 .new(0, 1.0, \cf5 'linear'\cf0 ); \cf2 // create a new ControlSpec\cf0 \
+	a.spec[\cf5 \\dur\cf0 ]  = [ 0.001, 1.0].asSpec;	 	\cf2 // shortcut from an array\cf0 \
+	a.spec[\cf5 \\freq\cf0 ] = \cf5 \\freq\cf0 .asSpec;         	\cf2 // some have predefined specs\cf0 \
+	a.spec[\cf5 \\amp\cf0 ]	= \cf5 \\amp\cf0 .asSpec;\
+	a.spec[\cf5 \\pan\cf0 ]  = \cf5 \\pan\cf0 .asSpec;\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+\cf2 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f1\b\fs24 \cf0 \ul \ulc0 Changing Control Parameters Over Time
+\f3\b0\fs18 \ulnone \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\fs24 \cf0 Now lets change the arguments over the life of the cloud.  There are several methods to do so.
+\f3\fs18 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f1\b\fs24 \cf0 Method 1: 
+\f0\b0  Change the center and dev values directly while the cloud is playing\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\fs18 \cf0 \
+	a.play(s);\
+	a[\cf5 \\freq\cf0 ] = 200;\
+	a[\cf5 \\freq\cf0 ] = 600;\
+	a[\cf5 \\freq\cf0 ] = 345.358594359;\
+	a.dev[\cf5 \\freq\cf0 ] = 0;\
+	a.dev[\cf5 \\rate\cf0 ] = 0;\
+	a.dev[\cf5 \\rate\cf0 ] = 0.01;\
+	a.dev[\cf5 \\freq\cf0 ] = 100;\
+	a.stop;\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\fs24 \cf0 	Or use GUI objects:\
+	\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\fs18 \cf0 	(\
+	// define some control specs used by the GUI\
+	a.spec[\cf5 \\rate\cf0 ] = \cf3 ControlSpec\cf0 .new(0, 1.0, \cf5 'linear'\cf0 ); \cf2 // create a new ControlSpec\cf0 \
+	a.spec[\cf5 \\dur\cf0 ]  = [ 0.001, 1.0].asSpec;	 	\cf2 // shortcut from an array\cf0 \
+	a.spec[\cf5 \\freq\cf0 ] = \cf5 \\freq\cf0 .asSpec;         	\cf2 // some have predefined specs\cf0 \
+	a.spec[\cf5 \\amp\cf0 ]	= \cf5 \\amp\cf0 .asSpec;\
+	a.spec[\cf5 \\pan\cf0 ]  = \cf5 \\pan\cf0 .asSpec;\
+	\
+	\cf2 // create a new window and use a FlowLayout to make placement easier\cf0 \
+	w = \cf3 SCWindow\cf0 .new(\cf4 "My GUI"\cf0 , \cf3 Rect\cf0 (300, 300, 100, 250));\
+	w.view.decorator = \cf3 FlowLayout\cf0 (\cf3 Rect\cf0 (0, 0, w.bounds.width, w.bounds.height));\
+\
+	\cf2 // create a play button\cf0 \
+	\cf3 SCButton\cf0 (w, \cf3 Rect\cf0 (0, 0, 54, 20))\
+		.states_([ [ \cf4 "Play"\cf0 , \cf3 Color\cf0 .black, \cf3 Color\cf0 .green ], [ \cf4 "Stop"\cf0 , \cf3 Color\cf0 .black, \cf3 Color\cf0 .red ] ])\
+		.action_(\{ \cf3 arg\cf0  box; if(box.value == 1, \{ a.play(s) \}, \{ a.stop \}) \});\
+			\
+	w.view.decorator.nextLine;\
+\
+	\cf2 // create a center and dev slider for freq input\cf0 \
+	\cf3 SCSlider\cf0 (w, \cf3 Rect\cf0 (0, 0, 25, 200))\
+		.value_(a.spec[\cf5 \\freq\cf0 ].unmap(a[\cf5 \\freq\cf0 ].value))\
+		.action_(\{ \cf3 arg\cf0  slider; a[\cf5 \\freq\cf0 ] = a.spec[\cf5 \\freq\cf0 ].map(slider.value) \});\
+	\
+	\cf3 SCSlider\cf0 (w, \cf3 Rect\cf0 (0, 0, 25, 200))\
+		.value_(a.spec[\cf5 \\freq\cf0 ].unmap(a.dev[\cf5 \\freq\cf0 ].value))\
+		.action_(\{ \cf3 arg\cf0  slider; a.dev[\cf5 \\freq\cf0 ] = a.spec[\cf5 \\freq\cf0 ].map(slider.value) \});\
+		\
+	w.front;\
+	)
+\f0\fs24 \
+	\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f1\b \cf0 Method 2: 
+\f0\b0 Use an Env object to change the object over time\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\fs18 \cf0 \
+	(\
+	a[\cf5 \\freq\cf0 ] = \cf3 Env\cf0 ([ 220, 220, 880, 880, 110, 330, 440 ], [ 1.0, 1.0, 1.0, 0.5, 0.5, 0.5 ], \cf5 'exponential'\cf0 );\
+	a.dev[\cf5 \\freq\cf0 ] = \cf3 Env\cf0 ([0, 100], [ 5 ], \cf5 'linear'\cf0 );\
+	a.play(s)\
+	)\
+\
+	\cf2 // an envelope may be added in real-time with the putEnv or putDevEnv method\cf0 \
+	a.putEnv(\cf5 \\freq\cf0 , \cf3 Env\cf0 ([20, 880, 400], [ 2, 3 ]));\
+	a.putDevEnv(\cf5 \\freq\cf0 , \cf3 Env\cf0 ([ 0, 300 ], [ 10 ]));\
+	\
+	a.stop;\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f1\b\fs24 \cf0 Method 3: 
+\f0\b0 Use a stream or any pattern converted to a stream with the .asStream method. (see [Streams]\
+	helpfile for more info).
+\f3\fs18 \
+\
+	\cf2 // randomly choose from the list of frequencies\cf0 \
+	a.dev[\\freq] = 0;\
+	a[\cf5 \\freq\cf0 ] = \cf3 Prand\cf0 ([ 440, 880, 220, 330 ], \cf3 inf\cf0 ).asStream;\
+	a.play(s);\
+	a.stop;\
+\
+	\cf2 // a more complicated pattern\cf0 \
+	a[\cf5 \\freq\cf0 ] = \cf3 Pseq\cf0 ([ \cf3 Prand\cf0 ([ 440, 880, 220, 330 ], 100), \cf3 Pseries\cf0 (100, 2, 200) ], \cf3 inf\cf0 ).asStream;\
+	a.play(s);\
+	a.stop;\
+\
+
+\f1\b\fs24 Method 4: 
+\f0\b0 Use a user defined function that returns a value each time it is evaluated.  \
+\
+	Each time the function is evaluated it is passed five variables as arguments: \
+\
+	f
+\f3\fs18 unction.value(grainArgs, centerArgs, devArgs, randArgs, attrRelTime);
+\f0\fs24 \
+	\
+		
+\f1\b grainArgs
+\f0\b0   	An IdentityDictionary of grain argument values for other previously calculated args.\
+		
+\f1\b centerArgs
+\f0\b0 	An IdentityDictionary of center argument values for other previously calculated args.\
+		
+\f1\b devArgs
+\f0\b0 		An IdentityDictionary of dev argument values for other previously calculated args.\
+		
+\f1\b randArgs
+\f0\b0 		An IdentityDictionary of actual deviation values (after distribution function was\
+					was applied) for other previously calculated args.\
+		
+\f1\b attrRelTime	
+\f0\b0 The relative time elapsed since the play method was started, adjusted for the\
+					presence of loops.\
+		\
+	When dependencies are used, the order of dependency must be defined in the 
+\f1\b order
+\f0\b0  instance variable.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\fs18 \cf0 	\cf2 // control the frequecy using a function\cf0 \
+	a[\cf5 \\freq\cf0 ] = \{ [ 220, 330, 440, 550 ].wchoose([ 4, 3, 2, 1].normalizeSum) \};
+\f0\fs24 \
+	\
+
+\f3\fs18 	\cf2 // use a function to make the grain duration a function of the grain rate\cf0 \
+	a[\cf5 \\dur\cf0 ] = \{ \cf3 arg\cf0  grainArgs;  grainArgs[\cf5 \\rate\cf0 ] * 3 \};  \cf2 // dur will be three times the grain rate\cf0 \
+	a.order = [ \cf5 \\rate\cf0 , \cf5 \\dur\cf0  ];  \cf2 // make sure \\rate is calculated before \\dur\cf0 \
+	a.play(s);\
+\
+	// slow it down so we can hear the dependency\
+	a[\\rate] = 0.5;  // grain dur changes too, because it depends on \\rate\
+	a[\\rate] = 0.01;\
+	a.dev[\\rate] = 0.003;\
+\
+	a.stop;\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f1\b\fs24 \cf0 Method 5: 
+\f0\b0 Map grain parameters to an external control bus;\
+\
+	
+\f3\fs18 \cf2 // allocate a control bus to use\cf0 \
+	b = \cf3 Bus\cf0 .control(s, 1);\
+	\
+	\cf2 // set an initial value\cf0 \
+	b.set(440);\
+	\
+	\cf2 // map frequency variable to control bus\cf0 \
+	a.center.removeAt(\cf5 \\freq\cf0 );		\cf2 // remove \\freq from center calculations\cf0 \
+	a.dev.removeAt(\cf5 \\freq\cf0 );			\cf2 // remove \\freq from dev calculations\cf0 \
+	a.map = [ \cf5 \\freq\cf0 , b.index ];		\cf2 // map \\freq to bus index\cf0 \
+	\
+	a.play(s);\
+\
+	// change the bus value\
+	b.set(220);\
+\
+	// change bus with external process\
+	c = \{ Out.kr(b.index, SinOsc.ar(2.0, 0, 50, 300)) \}.play;\
+	c.free;	\
+\
+	d = Bus.control(s, 1);\
+	d.set(0.1);		\
+	a.map = [ \\freq, b.index, \\amp, d.index ];\
+\
+	e = \{ Out.kr(d.index, Amplitude.kr(AudioIn.ar(1))) * 10 \}.play;\
+	e.free;\
+\
+	a.stop;\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f1\b\fs24 \cf0 \ul Looping Support\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\b0 \cf0 \ulnone There are two ways to loop attribute values.  The first way is to loop grain attributes individually using the loop\
+IdentityDictionary.  See the 
+\f1\b loop
+\f0\b0  definition above.  Loops only work on time based data, so only with envelopes\
+or functions that rely on the attrRelTime argument are looped.  The syntax is 
+\f1\b [ loopStart, loopEnd, numLoops ].  
+\f3\b0\fs18 \
+\
+	// set the freq back to an envelope\
+	a.map = [ ];	\
+	a[\cf5 \\freq\cf0 ] = \cf3 Env\cf0 .new([ 220, 220, 880, 880, 220, 330, 440 ], [ 1.0, 1.0, 1.0, 0.5, 0.5, 0.5 ], \cf5 'exponential'\cf0 );\
+	\
+	// loop the freq value between 1 sec and 2 sec 4 times before moving on\
+	a.loop[\cf5 \\freq\cf0 ] = [ 1.0, 2.0, 4 ];\
+	a.play(s);\
+	a.stop;\
+\
+
+\f0\fs24 The second looping method loops the entire cloud.  In other words, all center/dev values are looped \
+simultanously.  It uses the same syntax but is set in the 
+\f1\b loopAll
+\f0\b0  instance variable.
+\f3\fs18 \
+\
+	\cf2 // set the pan center to an envelope\cf0 \
+	a[\cf5 \\pan\cf0 ]   = \cf3 Env\cf0 .new([ 0, -1.0, 1.0, 0 ], [ 1, 1, 2 ], \cf5 'linear'\cf0 );\
+	a.loop[\cf5 \\freq\cf0 ] = \cf3 nil\cf0 ; \cf2 // nullify the individual freq loop we set before;\cf0 \
+	\
+	\cf2 // set the entire cloud to loop from 1 sec to 2 sec 4 times before continuing on \cf0 \
+	a.loopAll = [ 1.0, 2.0, 4 ];\
+	a.play(s);\
+	a.stop;\
+\
+
+\f0\fs24 Both looping mechanisms can be used at the same time.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\fs18 \cf0 \
+	a.loop[\\freq] = [ 1.5, 2.5, 3 ];\
+	a.play(s);\
+	a.stop;\
+\
+
+\f1\b\fs24 \ul \
+Another Example\
+
+\f3\b0\fs18 \ulnone 	\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\fs24 \cf0 How about an example that granulates a soundfile?  This SynthDef granulates a sound file and has an\
+envelope that can change shape from grain to grain.\
+\
+	
+\f3\fs18 s = \cf3 Server\cf0 .local.boot;\
+
+\f0\fs24 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f3\fs18 \cf0 	(\
+	\cf2 // define a synthdef for a buffer based grain
+\f0\fs24 \cf0 \
+
+\f3\fs18 	\cf3 SynthDef\cf0 (\cf5 \\bufgrain\cf0 , \{ \cf3 arg\cf0  out, buf, dur, amp, bufRate, startPos, pan, envCenter;\
+	\
+		\cf3 Out\cf0 .ar(out, \
+			\cf3 Pan2\cf0 .ar(\
+				\cf3 PlayBuf\cf0 .ar(1, buf, \cf3 BufRateScale\cf0 .kr(buf) * bufRate, 1, \cf3 BufFrames\cf0 .kr(buf) * startPos, 0) * \cf3 EnvGen\cf0 .kr(\cf3 Env\cf0 .new([ 0, amp, 0 ], [ dur * envCenter, dur * (1 - envCenter) ], \cf5 'sine'\cf0 ), doneAction: 2),\
+				pan\
+			)\
+		)\
+	\}).send(s);
+\f0\fs24 \
+
+\f3\fs18 	)\
+	\
+	\cf2 // load a soundfile into a buffer\cf0 \
+	b = \cf3 Buffer\cf0 .read(s, \cf4 "sounds/a11wlk01.wav"\cf0 );\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\li1700\fi-1700\ql\qnatural
+
+\f0\fs24 \cf0 	\
+	
+\f3\fs18 \cf2 // build a new GranCloud
+\f0\fs24 \cf0 \
+	
+\f3\fs18 (\
+	a = \cf3 GranCloud\cf0 .new; \cf2 // create a new blank instance of GranCloud and store in in variable a.\cf0 \
+	\
+	\cf2 // set the center values of the grain attributes (using the bracket shortcut)\cf0 \
+	a[\cf5 \\rate\cf0 ]      = 0.05;	\cf2 // grain rate in number of seconds between grain start times\cf0 \
+	a[\cf5 \\dur\cf0 ]       = 0.2;	\cf2 // duration of the grain envelope in seconds\cf0 \
+	a[\cf5 \\amp\cf0 ]       = 0.1;	\cf2 // the amplitude of the envelope (0 to 1)\cf0 \
+	a[\cf5 \\bufRate\cf0 ]   = 1.0;	\cf2 // buf read rate, will correspond to transposition level\cf0 \
+	a[\cf5 \\pan\cf0 ]       = 0;		\cf2 // a pan position (0 to 1)\cf0 \
+	a[\cf5 \\envCenter\cf0 ] = 0.5;\
+\
+	\cf2 // change and loop the start position\cf0 \
+	a[\cf5 \\startPos\cf0 ] = \cf3 Env\cf0 ([0, 1], [ 3 ], \cf5 'linear'\cf0 );\
+	a.loop[\cf5 \\startPos\cf0 ] = [ 0, 3, \cf3 inf\cf0  ];\
+	\
+	a.duration = \cf3 inf\cf0 ;\
+	a.def = \cf5 \\bufgrain\cf0 ;\
+	)\
+	\
+	a.play\
+\
+	\cf2 // slow it down\cf0 \
+	a.stop;\
+	a[\cf5 \\startPos\cf0 ] = \cf3 Env\cf0 ([0, 1], [ 7 ], \cf5 'linear'\cf0 );\
+	a.loop[\cf5 \\startPos\cf0 ] = [ 0, 7, \cf3 inf\cf0 ];\
+	a.play;\
+	\
+	\cf2 // change the transposition\cf0 \
+	a[\cf5 \\bufRate\cf0 ] = 2.0;\
+\
+	a.dev[\cf5 \\rate\cf0 ] = 0.02;\
+	a.dev[\cf5 \\dur\cf0 ]  = 0.05;\
+\
+	a.dev[\cf5 \\pan\cf0 ] = 0.25;	\
+\
+	a[\cf5 \\bufRate\cf0 ] = 1.0;\
+\
+	a.stop;\
+	a[\cf5 \\startPos\cf0 ] = \cf3 Env\cf0 ([0, 1], [ 2 ], \cf5 'linear'\cf0 );\
+	a.loop[\cf5 \\startPos\cf0 ] = [ 0, 2, \cf3 inf\cf0 ];\
+	a.play\
+\
+	(\
+	a[\cf5 \\startPos\cf0 ] = \cf3 Env\cf0 ([0, 1, 0], [ 3, 2 ]);\
+	a.loop[\cf5 \\startPos\cf0 ] = [ 0, 5, \cf3 inf\cf0  ];\
+	a[\cf5 \\bufRate\cf0 ] = \cf3 Env\cf0 ([ 0.15, 3.0, 1.0 ], [ 10, 3 ]);\
+	a.reset(0);\
+	)\
+\
+	\cf2 // change envelope shape\cf0 \
+	a[\cf5 \\rate\cf0 ] = 0.5; a[\cf5 \\dur\cf0 ] = 1.0;\
+	a[\cf5 \\envCenter\cf0 ] = 0.01;	\
+	a[\cf5 \\envCenter\cf0 ] = 0.99; \
+	a[\cf5 \\envCenter\cf0 ] = 0.5;	\
+	a[\cf5 \\rate\cf0 ] = 0.05; a[\cf5 \\dur\cf0 ] = 0.2;\
+\
+	\
+\
+	\
+
+\f0\fs24 Create a GranCloudGUI based on this cloud.
+\f3\fs18 \
+\
+	\cf2 // INCOMPLETE AND UNDER CONSTRUCTION\cf0 \
+	\cf3 GranCloudGUI\cf0 .display(s, 0, 1, \cf4 "Test Cloud"\cf0 , a);\
+\
+\
+}

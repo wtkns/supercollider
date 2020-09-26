@@ -1,0 +1,20 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Candara;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue255;\red191\green0\blue0;\red0\green0\blue191;
+\red0\green115\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs44 \cf0 		domain.animae.do(\{ \cf2 arg\cf0  part, j;\
+			\cf2 var\cf0   topBound, botBound;\
+			\cf3 part.color = Color.rand;\cf0 \
+			topBound = domain.bounds.y/4;\
+			botBound = domain.bounds.y-topBound;\
+			part.position = \cf4 Point\cf0 .new(j*(domain.bounds.x/10), (topBound+ j*(botBound-topBound/100)));\
+			\cf3 //part.color = Color.rand;\cf0 \
+			part.visible = 1/(j%4);\
+			part.strategy = \cf5 \\wave\cf0 ;\
+			part.size = \cf4 Point\cf0 .new(100,100);\
+			part.velocity =  \cf4 Point\cf0 .new(5,50);\
+\cf3 			(j%2==0).if(\{part.velocity = \cf0  \cf4 Point\cf0 .new(5,30)\}, \{\cf3 part.velocity = \cf0  \cf4 Point\cf0 .new(5,-30)\});\
+\
+		\});}

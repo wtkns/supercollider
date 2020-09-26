@@ -1,5 +1,8 @@
 includePaths:
     -   /home/jms/.local/share/SuperCollider/downloaded-quarks/redUniverse
+    -   /home/jms/.local/share/SuperCollider/downloaded-quarks/XML
+    -   /home/jms/.local/share/SuperCollider/downloaded-quarks/Ctk
+    -   /home/jms/git/wtkns/research/visuals/baremin
 excludePaths:
     []
 postInlineWarnings: false

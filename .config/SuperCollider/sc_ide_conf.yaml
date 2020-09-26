@@ -19,20 +19,24 @@ IDE:
     useComboBoxWhenSplitting: false
   interpreter:
     autoStart: true
-    configFile: /home/jms/.config/SuperCollider/sclang_conf.yaml
+    configFile: /home/jms/git/wtkns/supercollider/.config/SuperCollider/sclang_conf.yaml
     runtimeDir: ""
   mainWindow:
     detached: !QVariantMap
       documents-dock: ""
       help-dock: ""
       post-dock: ""
-    geometry: AdnQywADAAAAAABjAAAAPQAACVMAAAXBAAAAYwAAAGIAAAlTAAAFwQAAAAAAAAAACgAAAABjAAAAYgAACVMAAAXB
-    state: AAAA/wAAAAD9AAAAAgAAAAAAAAAAAAAAAPwCAAAAAfsAAAAcAGQAbwBjAHUAbQBlAG4AdABzAC0AZABvAGMAawAAAAAA/////wAAAGEA////AAAAAQAABEYAAAUr/AIAAAAC+wAAABIAaABlAGwAcAAtAGQAbwBjAGsBAAAAGAAAAuQAAABPAP////sAAAASAHAAbwBzAHQALQBkAG8AYwBrAQAAAv0AAAJGAAAATwD///8AAASqAAAFKwAAAAEAAAACAAAAAQAAAAL8AAAAAA==
+    geometry: AdnQywADAAAAAAFoAAAAGwAACGEAAAWfAAABaAAAAEAAAAhhAAAFnwAAAAAAAAAACgAAAAFoAAAAQAAACGEAAAWf
+    state: AAAA/wAAAAD9AAAAAgAAAAAAAADIAAAFK/wCAAAAAfsAAAAcAGQAbwBjAHUAbQBlAG4AdABzAC0AZABvAGMAawAAAAAYAAAFKwAAAGEA////AAAAAQAAAlsAAAUr/AIAAAAC+wAAABIAaABlAGwAcAAtAGQAbwBjAGsAAAAAGAAAAuQAAABPAP////sAAAASAHAAbwBzAHQALQBkAG8AYwBrAQAAABgAAAUrAAAATwD///8AAASeAAAFKwAAAAEAAAACAAAAAQAAAAL8AAAAAA==
   postWindow:
     lineWrap: false
     scrollback: 1000
   recentDocuments: !QVariantList
-    - /home/jms/.local/share/SuperCollider/downloaded-quarks/redUniverse/redUniverse.quark
-    - /home/jms/git/wtkns/supercollider/visuals/wavePhaseTest.scd
-    - /home/jms/git/wtkns/supercollider/.config/SuperCollider/startup.scd
+    - /home/jms/git/wtkns/research/vfthm/requirements.txt
+    - /home/jms/git/wtkns/research/vfthm/README.md
+    - /home/jms/git/wtkns/supercollider/visuals/tongues/tongues.scd
+    - /home/jms/git/wtkns/supercollider/visuals/tongues/tongues2.scd
+    - /home/jms/git/wtkns/supercollider/visuals/tongues/extensions/Anima.sc
+    - /home/jms/git/wtkns/supercollider/visuals/tongues/extensions/Khora.sc
+    - /home/jms/git/wtkns/supercollider/sketches/quadDrone.scd
   startWithSession: last

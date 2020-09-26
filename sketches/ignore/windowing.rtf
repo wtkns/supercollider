@@ -1,0 +1,240 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf360
+{\fonttbl\f0\fmodern\fcharset0 Courier;}
+{\colortbl;\red255\green255\blue255;\red191\green0\blue0;\red0\green0\blue191;\red255\green102\blue0;
+\red51\green51\blue191;\red0\green0\blue255;\red96\green96\blue96;\red0\green115\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs36 \cf2 // Windowed spectral analysis\cf0 \
+\cf2 // NOTE: get your dft and idft code evaluated before you run the examples\cf0 \
+\
+\cf2 // global signal size\cf0 \
+n = 64;\
+\
+\cf2 // x is a periodic signal with frequency 1\cf0 \
+a = \cf3 Signal\cf0 .newClear(n);\
+a.sineFill2([[1, 1.0, 0.0]]);\
+a.plot;	\
+\
+\cf2 // y is a non-periodic signal with frequency 3/4\cf0 \
+b = \cf3 Signal\cf0 .newClear(n);\
+b.sineFill2([[0.75, 1.0, 0.0]]);\
+b.plot;	\
+\
+\cf2 // use our DFT to analyze them (put 0 Hz at center of plot)\cf0 \
+\cf4 ~dft\cf0 .value(a).magnitude.rotate(n.div(2)).plot(minval: 0.0, maxval: 1.0);\
+\
+\cf4 ~dft\cf0 .value(b).magnitude.rotate(n.div(2)).plot(minval: 0.0, maxval: 1.0);\
+\
+\cf2 // While the spectrum of x shows two clear peaks\cf0 \
+\cf2 // the one one of y shows more than one peak and \cf0 \
+\cf2 // energy spread over all frequencies.\cf0 \
+\cf2 // Let's take a closer look of the magnitude spectrum in dB\cf0 \
+\cf2 // (we look only at the first half of the spectrum)\cf0 \
+\cf4 ~dft\cf0 .value(b).magnitude.ampdb.drop((n.div(2)).neg).plot(minval: -60, maxval: 0)\
+\
+\cf2 // Two issues can be observed:\cf0 \
+\cf2 // 1. the energy of the peak spreads over more than one frequency,\cf0 \
+\cf2 // this is a frequency quantization problem because we are analyzing\cf0 \
+\cf2 // a frequency that doesn't belong to the grid represented by fs/N\cf0 \
+\cf2 // (closer look of the problem)\cf0 \
+\cf4 ~dft\cf0 .value(b).magnitude.ampdb.drop(5-n).plot2(minval: -60, maxval: 0, discrete: \cf5 true\cf0 )\
+\
+\cf2 // 2. the signal presents discontinuities at the edges that are\cf0 \
+\cf2 // considered periodic by the DFT, sudden changes in the phase of  \cf0 \
+\cf2 // the time-domain signal correspond to noise in the spectrum\cf0 \
+\cf2 // (see the spectrum of a click)\cf0 \
+c = \cf3 Signal\cf0 .newClear(n);\
+c.put(n.div(2), 1.0);\
+c.plot;	\
+\
+\cf4 ~dft\cf0 .value(c).magnitude.ampdb.plot(minval: -60, maxval: 0)\
+\
+\cf2 // Solving problem #1: spectral quantization\cf0 \
+\cf2 // there are only two ways of dealing with the problem:\cf0 \
+\cf2 // increasing the sampling rate or incresing the size of N\cf0 \
+\cf2 // usually the sampling rate is fixed so only the second\cf0 \
+\cf2 // option is available. We can add M zero-valued smaples\cf0 \
+\cf2 // in order to increase N without any extra input samples.\cf0 \
+d = b ++ \cf3 Signal\cf0 .newClear(n*4);\
+d.plot;\
+\
+\cf4 ~dft\cf0 .value(d).magnitude.ampdb.drop(d.size.div(2).neg).plot(minval: -60, maxval: 0);\
+\
+\cf2 // close up look at the peak\cf0 \
+\cf4 ~dft\cf0 .value(d).magnitude.ampdb.drop(9-(n*5)).plot(minval: -60, maxval: 0, discrete: \cf5 true\cf0 )\
+\
+\cf2 // the peak is now more clearly defined as being between\cf0 \
+\cf2 // two of the points of the grid and we can more easily\cf0 \
+\cf2 // interpolate its frequency, amplitude, and phase\cf0 \
+\
+\cf2 // Solving problem #2: spectral leakeage\cf0 \
+\cf2 // we have to smooth out the edges of the signal,\cf0 \
+\cf2 // we should use a time-domain window.\cf0 \
+\
+\cf2 // Triangular (or Parzen) window:\cf0 \
+e = \cf3 Signal\cf0 .newClear(n);\
+n.do(\{ \cf6 arg\cf0  i; e.put(i, 1 - (i - ((n/2)) / (n/2)).abs)\});\
+e.plot;\
+b.plot;\
+\
+f = b * e;\
+f.plot;		\
+\
+\cf4 ~dft\cf0 .value(f).magnitude.ampdb.drop(n.div(2).neg).plot(minval: -60, maxval: 0);\
+\
+\cf2 // close up of the peak\cf0 \
+\cf4 ~dft\cf0 .value(f).magnitude.ampdb.drop(9-n).plot(minval: -60, maxval: 0, discrete: \cf5 true\cf0 )\
+\
+\cf2 // spectrum of the window\cf0 \
+\cf4 ~dft\cf0 .value(e).magnitude.ampdb.rotate(n.div(2)).plot(minval: -60, maxval: 0);\
+\
+\cf2 // Hann (or Hanning) window:\cf0 \
+g = \cf3 Signal\cf0 .hanningWindow(n);\
+g.plot(minval: 0, maxval: 1);\
+\
+h = b * g;\
+h.plot;\
+\
+\cf4 ~dft\cf0 .value(h).magnitude.ampdb.drop(n.div(2).neg).plot(minval: -60, maxval: 0);\
+\
+\cf2 // close up of the peak\cf0 \
+\cf4 ~dft\cf0 .value(h).magnitude.ampdb.drop(9-n).plot(minval: -60, maxval: 0, discrete: \cf5 true\cf0 )\
+\
+\cf2 // spectrum of the window\cf0 \
+\cf4 ~dft\cf0 .value(g).magnitude.ampdb.rotate(n.div(2)).plot(minval: -60, maxval: 0);\
+\
+\cf2 // Hamming window:\cf0 \
+i = \cf3 Signal\cf0 .hammingWindow(n);\
+i.plot(minval: 0, maxval: 1);\
+\
+j = b * i;\
+j.plot;\
+\
+\cf4 ~dft\cf0 .value(j).magnitude.ampdb.drop(n.div(2).neg).plot(minval: -60, maxval: 0);\
+\
+\cf2 // close up of the peak\cf0 \
+\cf4 ~dft\cf0 .value(j).magnitude.ampdb.drop(9-n).plot2(minval: -60, maxval: 0, discrete: \cf5 true\cf0 )\
+\
+\cf2 // spectrum of the window\cf0 \
+\cf4 ~dft\cf0 .value(i).magnitude.ampdb.rotate(n.div(2)).plot(minval: -60, maxval: 0);\
+\
+\cf2 // combining windowing with zero padding we can get better results\cf0 \
+\cf2 // we can do this using Signal's window methods in one shot\cf0 \
+\cf2 // (look at the documentation for hanningWindow method)\cf0 \
+k = \cf3 Signal\cf0 .hanningWindow(n*2, n)\
+k.plot;\
+\
+l = \cf3 Signal\cf0 .newClear(k.size);\
+k.do(\{\cf6 arg\cf0  val, i; (i < n).if(\{ l[i] = val * b[i] \}, \{ l[i] = val \})\});\
+l.plot\
+\
+\cf4 ~dft\cf0 .value(l).magnitude.ampdb.drop(n.neg).plot(minval: -60, maxval: 0);\
+\
+\cf2 // close up of the peak\cf0 \
+\cf4 ~dft\cf0 .value(l).magnitude.ampdb.drop(12 - k.size).plot(minval: -60, maxval: 0, discrete: \cf5 true\cf0 )\
+\
+\cf2 // spectrum of the window\cf0 \
+\cf4 ~dft\cf0 .value(k).magnitude.ampdb.rotate(k.size.div(2)).plot(minval: -90, maxval: 0);\
+\
+\cf2 // now lets look a real sound signals stored in sound files\cf0 \
+\
+\cf2 // open input file\cf0 \
+\cf4 ~fil\cf0  = \cf3 SoundFile\cf0 .new;\
+\cf4 ~fil\cf0 .openRead(\cf7 "cl-c4.aiff"\cf0 );\
+\
+\cf2 // let's try matching two periods of the fundamental\cf0 \
+\cf4 ~win_size\cf0  = (\cf8 \\c4\cf0 .hertz.half.reciprocal * \cf4 ~fil\cf0 .sampleRate).floor;\
+\
+\cf2 // create an input buffer\cf0 \
+\cf4 ~in_buffer\cf0  = \cf3 Signal\cf0 .newClear(\cf4 ~win_size\cf0 );\
+\
+\cf2 // seek first sample to read from file,\cf0 \
+\cf2 // read 0.5 seconds into the file\cf0 \
+\cf4 ~fil\cf0 .seek((0.5*\cf4 ~fil\cf0 .sampleRate).floor, 0);\
+\
+\cf2 // read samples into buffer\cf0 \
+\cf4 ~fil\cf0 .readData(\cf4 ~in_buffer\cf0 );\
+\
+\cf2 // plot the input samples\cf0 \
+\cf4 ~in_buffer\cf0 .plot(minval: -1, maxval: 1);\
+\
+\cf2 // spectrum of the signal\cf0 \
+\cf4 ~dft\cf0 .value(\cf4 ~in_buffer\cf0 ).magnitude.plot;\
+\
+\cf2 // look at the first 84 samples of the spectrum\cf0 \
+\cf4 ~dft\cf0 .value(\cf4 ~in_buffer\cf0 ).magnitude.drop(84 - ~in_buffer.size).plot;\
+\
+\cf2 // use a Hanning window and zero padding\cf0 \
+\cf4 ~win\cf0  = \cf3 Signal\cf0 .hanningWindow(\cf4 ~win_size\cf0 ) ++ \cf3 Signal\cf0 .newClear(\cf4 ~win_size\cf0 );\
+\cf4 ~win\cf0 .size;\
+\
+\cf4 ~win_input\cf0  = \cf4 ~win\cf0 .collect(\{\cf6 arg\cf0  val, i; (i < \cf4 ~in_buffer\cf0 .size).if(\{ val * \cf4 ~in_buffer\cf0 [i] \}, \{ val \})\});\
+\
+\cf4 ~win_input\cf0 .plot(minval: -1, maxval: 1);\
+\
+\cf4 ~dft\cf0 .value(\cf4 ~win_input\cf0 ).magnitude.plot;\
+\
+\cf2 // look at the first 168 samples of the spectrum\cf0 \
+\cf4 ~dft\cf0 .value(\cf4 ~win_input\cf0 ).magnitude.drop(168 - ~win.size).plot;\
+\
+\cf2 // we could do the same thing using SC's fft function\cf0 \
+\cf2 // but for this we need N to be a power of two.\cf0 \
+\cf2 // In this case we keep the window size the same \cf0 \
+\cf2 // and we zero pad up to the next power of two\cf0 \
+\
+\cf4 ~fft_size\cf0  = (\cf4 ~win_size\cf0  * 2).nextPowerOfTwo;\
+\
+\cf4 ~win\cf0  = \cf3 Signal\cf0 .hanningWindow(\cf4 ~win_size\cf0 ) ++ \cf3 Signal\cf0 .newClear(\cf4 ~fft_size\cf0  -\cf4 ~win_size\cf0 );\
+\cf4 ~win\cf0 .plot;\
+\
+\cf4 ~win_input\cf0  = \cf3 Signal\cf0 .newClear(\cf4 ~fft_size\cf0 );\
+\cf4 ~win\cf0 .do(\{\cf6 arg\cf0  val, i; (i < \cf4 ~win_size\cf0 ).if(\{ \cf4 ~win_input\cf0 [i] = val * \cf4 ~in_buffer\cf0 [i] \}, \{ \cf4 ~win_input\cf0 [i] = val \})\});\
+\
+\cf4 ~win_input\cf0 .plot(minval: -1, maxval: 1);\
+\
+\cf4 ~spectrum\cf0  = fft(\cf4 ~win_input\cf0 , \cf3 Signal\cf0 .newClear(\cf4 ~fft_size\cf0 ), \cf3 Signal\cf0 .fftCosTable(\cf4 ~fft_size\cf0 ));\
+\
+\cf4 ~spectrum\cf0 .magnitude.drop(84*2-1024).plot;\
+\
+\cf2 // note that the fft returns unnormalized values\cf0 \
+\cf2 // should divide by ~fft_size to get real amps\cf0 \
+(\cf4 ~spectrum\cf0 .magnitude * \cf4 ~fft_size\cf0 .reciprocal).ampdb.drop(84*2-1024).plot(minval: -90, maxval: 0);\
+\
+\cf2 // finally, close input file\cf0 \
+\cf4 ~fil\cf0 .close;\
+\
+\cf2 // we can write the previous sequence as a function\cf0 \
+(\
+\cf4 ~ana_0\cf0  = \{ \cf6 arg\cf0  file, start=0.0, lowest_freq=100, win_cycles=2, zero_pad=2;\
+	\cf6 var\cf0  fil, fil_srate, first_sample, m, n, in_buffer;\
+	\cf2 // open input file\cf0 \
+	fil = \cf3 SoundFile\cf0 .new;\
+	fil.openRead(file);\
+	\cf2 // file sampling rate\cf0 \
+	fil_srate = fil.sampleRate;\
+	\cf2 // first sample to read\cf0 \
+	first_sample = (start * fil_srate).floor;\
+	\cf2 // we compute the size of the window from\cf0 \
+	\cf2 // the number of cycles of the lowest_frequency\cf0 \
+	m = (lowest_freq.reciprocal * win_cycles * fil_srate).floor;\
+	\cf2 // fft size\cf0 \
+	n = (m * zero_pad).nextPowerOfTwo;\
+	\cf2 // input buffer\cf0 \
+	in_buffer = \cf3 Signal\cf0 .newClear(m);\
+	\cf2 // seek sample to read from file\cf0 \
+	fil.seek(first_sample, 0);	\cf2 // read samples into buffer\cf0 \
+	fil.readData(in_buffer);\
+	\cf2 // close file when done\cf0 \
+	fil.close;\
+	\cf2 // post window and FFT size\cf0 \
+	(\cf7 "M: "\cf0  + m + \cf7 " N: "\cf0  + n).postln;\
+	\cf2 // take DFT\cf0 \
+	fft(in_buffer ++ \cf3 Signal\cf0 .newClear(n-m), \cf3 Signal\cf0 .newClear(n), \cf3 Signal\cf0 .fftCosTable(n)) * n.reciprocal;\
+	\}\
+)\
+\
+\cf4 ~sp\cf0  = \cf4 ~ana_0\cf0 .value(\cf7 "cl-c4.aiff"\cf0 , 2.0, \cf8 \\c4\cf0 .hertz);\
+\
+\cf4 ~sp\cf0 .magnitude.ampdb.drop(84*2-1024).plot(minval: -90, maxval: 0);\
+\
+}

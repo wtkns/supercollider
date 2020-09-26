@@ -1,0 +1,122 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Monaco;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue191;\red96\green96\blue96;\red0\green115\blue0;
+\red191\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs18 \cf0 //ultimate vintage paradise\
+\
+(\
+\
+\cf2 Server\cf0 .default = s = \cf2 Server\cf0 .internal;\
+\
+s.waitForBoot(\{\
+	\
+\cf2 var\cf0  sample, player, func, dur;\
+\cf2 var\cf0  delayGrainulator, grains, primary, baselayer1, baselayer2, baselayer3, baselayer4;\
+\cf2 var\cf0  globalamp;\
+\
+globalamp = 3;\
+	\
+sample = \cf2 CtkBuffer\cf0 (\cf3 "/Users/jameswatkins/samp/summerstart1.wav"\cf0 ).load(sync: \cf2 true\cf0 );\
+\
+grains =  \cf2 CtkBuffer\cf0 (\cf3 "/Users/jameswatkins/samp/crush.wav"\cf0 ).load(sync: \cf2 true\cf0 );\
+\
+player = \cf2 CtkSynthDef\cf0 (\cf4 \\playing\cf0 , \{\cf2 arg\cf0  bufnumb, rate = 1, ampenv, pan = 0;\
+	\cf2 var\cf0  playback, output, lowpass, highpass;\
+	playback = \cf2 PlayBuf\cf0 .ar(1, bufnumb, rate, loop:1);\
+	\cf5 //lowpass filter\cf0 \
+	playback = \cf2 LPF\cf0 .ar(playback, 400, 8);\
+	\cf5 //highpass filter\cf0 \
+	playback = \cf2 HPF\cf0 .ar(playback, 2000, 8);\
+	\cf5 //bandpass filter\cf0 \
+	playback = \cf2 BPF\cf0 .ar(playback, 500, 0.5, 8);\
+	\cf5 //compressor\cf0 \
+	playback = \cf2 Compander\cf0 .ar(playback, playback,\
+\pard\pardeftab720
+\cf0 		thresh: 0.5,\
+		slopeBelow: 1,\
+		slopeAbove: 0.25,\
+		clampTime: 0.002,\
+		relaxTime: 0.01);\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 	output = playback * ampenv.dbamp;\
+	\cf2 Out\cf0 .ar(0, \cf2 Pan2\cf0 .ar(output, pan));\
+\});\
+\
+delayGrainulator = \cf2 CtkSynthDef\cf0 (\cf4 \\dgrain\cf0 , \{\cf2 arg\cf0  buffer, dust, ampenv, grainsize, roomsize = 30, pan = 0, rate = 1, outbus = 1;\
+	\cf2 var\cf0  src, delay, reverb, output;\
+	src = \cf2 GrainBuf\cf0 .ar(1, \cf2 Dust\cf0 .kr(dust), grainsize, buffer, rate, \cf2 LFNoise2\cf0 .kr(0.1).range(0, 1), 1, 0);\
+	delay = \cf2 DelayN\cf0 .ar(src, 1.0, \cf2 WhiteNoise\cf0 .ar.abs);\
+	delay = \cf2 LPF\cf0 .ar(delay, 400, 8);\
+	\cf5 //highpass filter\cf0 \
+	delay = \cf2 HPF\cf0 .ar(delay, 2000, 8);\
+	\cf5 //bandpass filter\cf0 \
+	delay = \cf2 BPF\cf0 .ar(delay, 500, 0.5, 8);\
+	\cf5 //compressor\cf0 \
+	delay = \cf2 Compander\cf0 .ar(delay, delay,\
+	thresh: 0.5,\
+\pard\pardeftab720
+\cf0 		slopeBelow: 1,\
+		slopeAbove: 0.25,\
+		clampTime: 0.002,\
+		relaxTime: 0.01);\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf0 	reverb = \cf2 GVerb\cf0 .ar(delay, roomsize, revtime: 0.5, damping: 0.61, inputbw: 0.34, spread: 15, drylevel: -2.5, maxroomsize: roomsize + 1);\
+	output = reverb;\
+	output = output * (ampenv.dbamp * globalamp);\
+	\cf2 Out\cf0 .ar(0, \cf2 Pan2\cf0 .ar(output, pan));\
+\});\
+\
+dur = 60;\
+\
+func = player.note(duration: dur)\
+	.bufnumb_(sample)\
+	.ampenv_(\cf2 CtkControl\cf0 .env(\cf2 Env\cf0 ([-100, -25, -25, -25, -100], [0.01, 0.49, 0.49, 0.01].normalizeSum, \cf4 \\sin\cf0 ), timeScale: dur))\
+	.play;\
+	//wait for compressor\
+	1.2.wait;\
+	\
+primary = delayGrainulator.note(duration: dur)\
+	.buffer_(grains)\
+	.dust_(1.6)\
+	.ampenv_(\cf2 CtkControl\cf0 .env(\cf2 Env\cf0 ([-100, -20, -20, -20, -100], [0.01, 0.49, 0.49, 0.01].normalizeSum, \cf4 \\sin\cf0 ), timeScale: dur))\
+	.grainsize_(0.01)\
+	.pan_(\cf2 CtkControl\cf0 .env(\cf2 Env\cf0 ([0, -0.2, 0.2, 0], [1, 1, 1].normalizeSum, \cf4 \\lin\cf0 ), timeScale: dur))\
+	.play;\
+	\
+baselayer1 = delayGrainulator.note(duration: dur)\
+	.buffer_(grains)\
+	.dust_(10)\
+	.ampenv_(\cf2 CtkControl\cf0 .env(\cf2 Env\cf0 ([-100, -35, -35, -35, -100], [0.01, 0.49, 0.49, 0.01].normalizeSum, \cf4 \\sin\cf0 ), timeScale: dur))\
+	.grainsize_(0.01)\
+	.pan_(0.15)\
+	.play;\
+	\
+baselayer2 = delayGrainulator.note(duration: dur)\
+	.buffer_(grains)\
+	.dust_(10)\
+	.ampenv_(\cf2 CtkControl\cf0 .env(\cf2 Env\cf0 ([-100, -35, -35, -35, -100], [0.01, 0.49, 0.49, 0.01].normalizeSum, \cf4 \\sin\cf0 ), timeScale: dur))\
+	.grainsize_(0.01)\
+	.pan_(-0.15)\
+	.play;\
+	\
+baselayer3 = delayGrainulator.note(duration: dur)\
+	.buffer_(grains)\
+	.dust_(5)\
+	.ampenv_(\cf2 CtkControl\cf0 .env(\cf2 Env\cf0 ([-100, -35, -35, -35, -100], [0.01, 0.49, 0.49, 0.01].normalizeSum, \cf4 \\sin\cf0 ), timeScale: dur))\
+	.grainsize_(0.005)\
+	.pan_(0.75)\
+	.play;\
+	\
+baselayer4 = delayGrainulator.note(duration: dur)\
+	.buffer_(grains)\
+	.dust_(5)\
+	.ampenv_(\cf2 CtkControl\cf0 .env(\cf2 Env\cf0 ([-100, -35, -35, -35, -100], [0.01, 0.49, 0.49, 0.01].normalizeSum, \cf4 \\sin\cf0 ), timeScale: dur))\
+	.grainsize_(0.005)\
+	.pan_(-0.75)\
+	.play;\
+\
+	\
+\})\
+)}

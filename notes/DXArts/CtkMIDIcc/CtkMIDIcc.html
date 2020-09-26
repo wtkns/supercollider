@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title></title>
+<meta name="Generator" content="Cocoa HTML Writer">
+<meta name="CocoaVersion" content="1038.36">
+<style type="text/css">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Optima; color: #000000; min-height: 17.0px}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Optima; color: #e10000}
+p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Optima; color: #000000}
+span.s1 {color: #2500cf}
+span.s2 {color: #008c00}
+span.Apple-tab-span {white-space:pre}
+</style>
+</head>
+<body>
+<p class="p1"><br></p>
+<p class="p2">// create a new instance</p>
+<p class="p3">~midi = <span class="s1">CtkMIDIcc</span>.new;</p>
+<p class="p1"><br></p>
+<p class="p2">// create a mapped responder</p>
+<p class="p2">// args are: (responder name, cc nr, mapping curve, grid, action function, initVal)</p>
+<p class="p3">~midi.startResp(<span class="s2">\k1</span>, 1, <span class="s1">Env</span>([0,1], [1], <span class="s2">\sin</span>), 0.0000001, {<span class="s1">|v|</span> v.postln}, 0.1)</p>
+<p class="p1"><br></p>
+<p class="p2">// see all active responders</p>
+<p class="p3">~midi.responders</p>
+<p class="p1"><br></p>
+<p class="p2">// see a responder's env</p>
+<p class="p3">~midi.env(<span class="s2">\k1</span>).plot</p>
+<p class="p1"><br></p>
+<p class="p2">// set a responder's env</p>
+<p class="p3">~midi.env(<span class="s2">\k1</span>, <span class="s1">Env</span>([0.0001, 1], [1], <span class="s2">\exp</span>))</p>
+<p class="p1"><br></p>
+<p class="p2">// the CtkControl bus assigned to the responder</p>
+<p class="p3">~midi.bus(<span class="s2">\k1</span>)</p>
+<p class="p1"><br></p>
+<p class="p2">// get the current value (post-mapping)</p>
+<p class="p3">~midi.val(<span class="s2">\k1</span>)</p>
+<p class="p1"><br></p>
+<p class="p2">// get the current value (pre-mapping)</p>
+<p class="p3">~midi.rawVal(<span class="s2">\k1</span>)</p>
+<p class="p1"><br></p>
+<p class="p2">// get the ccnr assigned to the responder</p>
+<p class="p3">~midi.ccnr(<span class="s2">\k1</span>)</p>
+<p class="p1"><br></p>
+<p class="p2">// get the grid used by the responder</p>
+<p class="p3">~midi.round(<span class="s2">\k1</span>)</p>
+<p class="p1"><br></p>
+<p class="p2">// set the grid used by the responder</p>
+<p class="p3">~midi.round(<span class="s2">\k1</span>, 0.1)</p>
+<p class="p1"><br></p>
+<p class="p2">// post the action of the responder</p>
+<p class="p3">~midi.action(<span class="s2">\k1</span>).postcs</p>
+<p class="p1"><br></p>
+<p class="p2">// set the action of the responder</p>
+<p class="p3">~midi.action(<span class="s2">\k1</span>, {<span class="s1">|v|</span> (v * 0.1).postln});</p>
+<p class="p1"><br></p>
+<p class="p1"><br></p>
+<p class="p2">// clear the responder</p>
+<p class="p3">~midi.clear(<span class="s2">\k1</span>)</p>
+<p class="p1"><br></p>
+<p class="p2">// see all active responders</p>
+<p class="p3">~midi.responders</p>
+<p class="p1"><br></p>
+<p class="p1"><br></p>
+<p class="p2">// dump all responder values (the format of this may change)</p>
+<p class="p3">~midi.dumpVals</p>
+<p class="p1"><br></p>
+<p class="p1"><br></p>
+<p class="p2">// create a mapped responder that doesn't contain a CtkControl (name of this method may change)</p>
+<p class="p2">// args are: (responder name, cc nr, mapping curve, grid, action function)</p>
+<p class="p3">~midi.startResp0(<span class="s2">\k2</span>, 2, <span class="s1">Env</span>([0,1], [1], <span class="s2">\sin</span>), 0.0000001, {<span class="s1">|v|</span> v.postln})</p>
+<p class="p1"><br></p>
+<p class="p2">// this shoud have good 2-way communication with a BCRpresets class...</p>
+<p class="p1"><br></p>
+<p class="p1"><br></p>
+<p class="p2">// clear all active responders</p>
+<p class="p3">~midi.clearAll</p>
+<p class="p1"><br></p>
+<p class="p1"><br></p>
+<p class="p1"><br></p>
+<p class="p2">/////////////// a quick example:</p>
+<p class="p3">s.boot;</p>
+<p class="p1"><br></p>
+<p class="p2">// create a new instance (note: this will auto-initialize and connect the MIDI)</p>
+<p class="p3">~midi = <span class="s1">CtkMIDIcc</span>.new;</p>
+<p class="p1"><br></p>
+<p class="p2">// create a mapped responder</p>
+<p class="p2">// args are: (responder name, cc nr, mapping curve, grid, action function, initVal)</p>
+<p class="p3">~midi.startResp(<span class="s2">\k1</span>, 1, <span class="s1">Env</span>([100, 10000], [1], <span class="s2">\exp</span>), 0.0000001, {<span class="s1">|v|</span> v.postln}, 0.1);</p>
+<p class="p1"><br></p>
+<p class="p2">// a simple synth</p>
+<p class="p3">~synth = <span class="s1">CtkSynthDef</span>(<span class="s2">\sin</span>, {<span class="s1">|freq = 440|</span><span class="Apple-tab-span">	</span><span class="s1">Out</span>.ar(0, <span class="s1">SinOsc</span>.ar(freq))});</p>
+<p class="p1"><br></p>
+<p class="p2">// start a note</p>
+<p class="p3">~note = ~synth.note.freq_(~midi.bus(<span class="s2">\k1</span>)).play;</p>
+<p class="p1"><br></p>
+<p class="p2">// change the grid, just to see it works:</p>
+<p class="p3">~midi.round(<span class="s2">\k1</span>, 50);</p>
+<p class="p1"><br></p>
+<p class="p2">// free the note</p>
+<p class="p3">~note.free;</p>
+<p class="p1"><br></p>
+<p class="p2">// clear all active responders</p>
+<p class="p3">~midi.clearAll</p>
+</body>
+</html>

@@ -1,0 +1,1320 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf360
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fmodern\fcharset238 Courier;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue191;\red191\green0\blue0;\red255\green102\blue0;
+\red0\green0\blue255;\red0\green0\blue0;\red0\green0\blue191;\red191\green0\blue0;}
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0\b\fs28 \cf0 -1) Multiplication (in the frequency domain)\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b0 \cf0 Overlap-add realtime convolution. This is what SC's 
+\f1 \cf2 Convolution2\cf0 .ar
+\f0  UGen does.\
+\
+Turns out we weren't particularly complete with the in class discussion and illustration....\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b \cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b0 \cf0 See: https://ccrma.stanford.edu/~jos/sasp/Overlap_Add_OLA_STFT_Processing.html\
+And in particular, see: https://ccrma.stanford.edu/~jos/sasp/Convolving_Long_Signals.html\
+\
+On this page (https://ccrma.stanford.edu/~jos/sasp/COLA_Examples.html), JOS discusses windowing and required overlap for accurate reconstruction of a signal. (COLA = constant-overlap-add.)\
+\
+Turns out for rectangular windows do not need an overlapping window step through the input signal. (JOS calles this 'hop size'.) The 'ringing' caused by the rectangular windowing is cancelled out by the neighbouring windows. However, for other window types, overlap is required to successfully reconstruct our desired signal. The degree of overlap varies with the particular window chosen.\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b \cf0 0) Correlation, Auto-correlation?\
+\
+\
+1) Window Method for FIR Filter Design: Lowpass prototype\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b0 \cf0 a) The ideal lowpass filter\
+\
+To get started, we'll define the cardinal sine function (also called normalized sinc function) in continuous time:\
+\
+y(x) = sin(\uc0\u960 x) / \u960 x\
+\
+As an SC global function we have:\
+
+\f1 \
+(\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // sinc\cf0 \
+\cf3 // cardinal sine function\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~sinc\cf0  = \{ \cf5 arg\cf0  x;\
+	(x == 0).if(\{ 1 \}, \{ sin(pi * x) / (pi * x) \})\
+	\}\
+)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+\
+We build the impulse response of the ideal lowpass (in discrete time) with sinc:
+\b \
+\
+
+\b0 y[nT] = wT/\uc0\u960  sinc(wnT/\u960 )\
+\
+where: \
+\
+fc = cutoff frequency (Hz)\
+w = 2\uc0\u960  fc = radian freq. (radian frequency)\
+n = sample number\
+fs = sampling rate (samp/sec)\
+T = sampling period (1/fs) (sec)\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b \cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b0 \cf0 b
+\b ) 
+\b0 Windowing
+\b \
+\
+
+\b0 Irritatingly, the sinc function stretches infinitely forward and backward in time. As a result, so does our ideal lowpass filter! So, to be usable, we'll need to take a time limited window of the impulse response.\
+\
+Here's how we'll do that in SC:\
+\
+
+\f1 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // sinc lowpass\
+// ideal lowpass filter kernel\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~lowpass\cf0  = \{ \cf5 arg\cf0  size, freq, fs;\
+	\cf5 var\cf0  w, sp;\
+	\
+	\cf3 // compute radian freq\cf0 \
+	w = 2 * pi * freq;\
+	\cf3 // compute sampling period\cf0 \
+	sp = fs.reciprocal;\
+	\
+	size.collect(\{\cf5 arg\cf0  n;\
+		w * sp / pi * \cf4 ~sinc\cf0 .value(w * sp / pi * (n - ((size-1)/2)))\
+	\}).as(Signal)\
+\}\
+)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // examples:\cf0 \
+\cf3 // kernel size = 15, 1Hz cutoff, 10Hz sampling rate\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~lowpass\cf0 .value(15, 1.0, 10.0).plot\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// kernel size = 16, 1Hz cutoff, 10Hz sampling rate\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~lowpass\cf0 .value(16, 1.0, 10.0).plot\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // kernel size = 15, 2.5Hz cutoff, 10Hz sampling rate\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~lowpass\cf0 .value(15, 2.5, 10.0).plot\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// kernel size = 16, 2.5Hz cutoff, 10Hz sampling rate\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~lowpass\cf0 .value(16, 2.5, 10.0).plot\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// kernel size = 15, 5Hz cutoff, 10Hz sampling rate\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~lowpass\cf0 .value(15, 5.0, 10.0).plot\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// kernel size = 16, 5Hz cutoff, 10Hz sampling rate\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~lowpass\cf0 .value(16, 5.0, 10.0).plot\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+\
+These example are certainly not ideal for audio signal processing. We've chosen some small kernel size values to more easily show some interesting features of the lowpass filter kernel:\
+\
+\'95 All these IRs are symmetrical about the centre. These filters are 'linear phase', which means that the phase response is just a delay. Or, that all frequencies are delayed equally through the filter.\
+\
+\'95 The ends of the IRs don't go to zero. The result is 'ringing' in the time domain, having the effect of a much less sharp cutoff in the frequency domain. (Reflections in the frequency domain.)\
+\
+\'95 When we choose fc = 1/2 * fs with an odd length, the resulting filter is just a single impulse at the centre of the kernel.\
+\
+\'95 The gain is scaled with cutoff frequency.\
+\
+\
+Let's have a look at some resulting frequency responses.\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // kernel size = 128, 1Hz cutoff, 10Hz sampling rate\cf0 \
+(\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 128, fc = 1.0, fs = 10.0, real, imag, cosTable, complex;\
+\
+real = \cf4 ~lowpass\cf0 .value(size, fc, fs);\
+imag = \cf2 Signal\cf0 .newClear(size);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size);\
+\
+complex = fft(real, imag, cosTable);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.plot(minval: 0.0, maxval: 3.dbamp);\
+)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // kernel size = 127, 1Hz cutoff, 10Hz sampling rate\
+// we'll have to zero pad for odd size\cf0 \
+(\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 127, fc = 1.0, fs = 10.0, real, imag, cosTable, complex;\
+\
+real = \cf4 ~lowpass\cf0 .value(size, fc, fs);\
+imag = \cf2 Signal\cf0 .newClear(size.nextPowerOfTwo);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // zero pad real\cf0 \
+real = real.extend(size.nextPowerOfTwo, 0);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size.nextPowerOfTwo);\
+\
+complex = fft(real, imag, cosTable);\
+\
+\cf3 // look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.plot(minval: 0.0, maxval: 3.dbamp);\
+)\
+\cf3 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 With both these two examples, we see we get ringing in the pass band!\
+\
+If we look in dB, it doesn't look as bad:\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // kernel size = 128, 1Hz cutoff, 10Hz sampling rate\
+// view spectrum in dB\cf0 \
+(\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 128, fc = 1.0, fs = 10.0, real, imag, cosTable, complex;\
+\
+real = \cf4 ~lowpass\cf0 .value(size, fc, fs);\
+imag = \cf2 Signal\cf0 .newClear(size);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size);\
+\
+complex = fft(real, imag, cosTable);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // look at the kernel\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 real.plot;\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.ampdb.plot(minval: -120, maxval: 3);\
+)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // kernel size = 127, 1Hz cutoff, 10Hz sampling rate\
+// we'll have to zero pad for odd size\cf0 \
+\cf3 // view spectrum in dB\cf0 \
+(\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 127, fc = 1.0, fs = 10.0, real, imag, cosTable, complex;\
+\
+real = \cf4 ~lowpass\cf0 .value(size, fc, fs);\
+imag = \cf2 Signal\cf0 .newClear(size.nextPowerOfTwo);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // zero pad real\cf0 \
+real = real.extend(size.nextPowerOfTwo, 0);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size.nextPowerOfTwo);\
+\
+complex = fft(real, imag, cosTable);\
+\
+\cf3 // look at the kernel\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 real.plot;\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.ampdb.plot(minval: -120, maxval: 3);\
+)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+\
+b
+\b ) 
+\b0 More windowing...
+\b \
+\
+
+\b0 Let's look to improve things in the time domain by applying (ring modulating) a Hann window (in the time domain) to our lowpass filter kernel.\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // kernel size = 128, 1Hz cutoff, 10Hz sampling rate\cf0 \
+(\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 128, fc = 1.0, fs = 10.0, real, imag, cosTable, complex;\
+\cf5 var\cf0  win;\
+\
+win = \cf2 Signal\cf0 .hanningWindow(size);\
+\
+real = \cf4 ~lowpass\cf0 .value(size, fc, fs);\
+real = real * win;					\cf3 // window w/ Hann window!\cf0 \
+imag = \cf2 Signal\cf0 .newClear(size);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size);\
+\
+complex = fft(real, imag, cosTable);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.plot(minval: 0.0, maxval: 3.dbamp);\
+)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+\
+Immediately, we see that the ringing in the frequency response is significantly reduced. Let's look at the response in dB and the kernel.\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // kernel size = 128, 1Hz cutoff, 10Hz sampling rate\
+// view spectrum in dB\cf0 \
+(\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 128, fc = 1.0, fs = 10.0, real, imag, cosTable, complex;\
+\cf5 var\cf0  win;\
+\
+win = \cf2 Signal\cf0 .hanningWindow(size);\
+\
+real = \cf4 ~lowpass\cf0 .value(size, fc, fs);\
+real = real * win;					\cf3 // window w/ Hann window!\cf0 \
+imag = \cf2 Signal\cf0 .newClear(size);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size);\
+\
+complex = fft(real, imag, cosTable);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // look at the kernel\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 real.plot;\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.ampdb.plot(minval: -120, maxval: 3);\
+)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+Comparing both time domain and frequency domain with the unwindowed version, we see that we have a much better filter, with much greater band rejection!\
+\
+We can choose many different windows to window our ideal lowpass (sinc) filter. Each of these will give a slightly different result, with differing frequency response. Remember that 
+\i multiplicaiton
+\i0  in \ul time\ulnone  gives 
+\i convolution
+\i0  in \ul frequency\ulnone , so the frequency response of our chosen window is convolved in with that of our ideal lowpass.\
+\
+Here (https://ccrma.stanford.edu/~jos/sasp/Hood_kaiserord.html), JOS shows how to design a Kaiser window (http://en.wikipedia.org/wiki/Window_function#Kaiser_windows) to more carefully control the frequency response of the windowed lowpass filter. \
+\
+c) As an exercise, have a look at what happens when you use other window types.\
+\
+For the adventurous, implement Kaiser windowing as JOS describes.\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b \cf0 2) Complementary filter method (spectral reversal)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b0 \cf0 \
+To this point we've just been looking at creating lowpass filters. What about highpass?\
+\
+Well, it turns out that we can create highpass filters from lowpass filters in a number of ways. We'll start by looking at the complementary filter approach.\
+\
+\
+a) Highpass from Lowpass\
+\
+Two filter are complementary if:\
+\
+H0 + H1 = H2\
+\
+Where H0 and H1 are two filters and H2 is a third. Let's do some simple arithmetic, and assign H0 to be a lowpass (LP), H1 to be a highpass (HP), and H2 as an allpass (AP). So we'll have:\
+\
+LP + HP = AP\
+\
+Two filters that become allpass when we sum them are complementary. We can rewrite so that:\
+\
+HP = AP - LP\
+\
+\
+Ok, so we can make a highpass filter from a lowpass filter. The trouble is, our highpass is defined in terms of both a lowpass (that we now know how to make) and some kind of allpass. Where do we get this?\
+\
+Turns out, the answer is already at hand. We use sinc!\
+\
+In discrete time, our highpass filter, will look like this:\
+\
+\
+y[nT] = sinc(n) - wT/\uc0\u960  sinc(wnT/\u960 )\
+\
+where: \
+\
+fc = cutoff frequency (Hz)\
+w = 2\uc0\u960  fc = radian freq. (radian frequency)\
+n = sample number\
+fs = sampling rate (samp/sec)\
+T = sampling period (1/fs) (sec)\
+\
+\
+Here's how we'll do that in SC:\
+\
+
+\f1 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // sinc highpass (complementary)\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~hipassc\cf0  = \{ \cf5 arg\cf0  size, freq, fs;\
+	\cf5 var\cf0  w, sp;\
+	\
+	\cf3 // compute radian freq\cf0 \
+	w = 2 * pi * freq;\
+	\cf3 // compute sampling period\cf0 \
+	sp = fs.reciprocal;\
+	\
+	size.collect(\{\cf5 arg\cf0  n;\
+		\cf4 ~sinc\cf0 .value(n - ((size-1)/2)) - (w * sp / pi * \cf4 ~sinc\cf0 .value(w * sp / pi * (n - ((size-1)/2))))\
+	\}).as(\cf2 Signal\cf0 )\
+\}\
+)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+... OR... since we already have 
+\f1 \cf4 ~lowpass
+\f0 \cf0  defined, let's rewrite as:\
+\
+\
+
+\f1 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // sinc highpass (complementary)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~hipassc\cf0  = \{ \cf5 arg\cf0  size, freq, fs;\
+	\cf4 ~lowpass\cf0 .value(size, fs/2, fs) - \cf4 ~lowpass\cf0 .value(size, freq, fs);\
+\}\
+)
+\f0 \
+\
+\
+Let's have a look:\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // kernel size = 127, 2.5Hz cutoff, 10Hz sampling rate\
+// view spectrum in dB\cf0 \
+\cf3 // we'll have to zero pad for odd size\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 127, fc = 2.5, fs = 10.0, real, imag, cosTable, complex;\
+\cf5 var\cf0  win;\
+\
+win = \cf2 Signal\cf0 .hanningWindow(size);\
+\
+real = \cf4 ~hipassc\cf0 .value(size, fc, fs);\
+real = real * win;					\cf3 // window w/ Hann window!\cf0 \
+real = real.extend(size.nextPowerOfTwo, 0);	\cf3 // zero pad real\cf0 \
+\
+imag = \cf2 Signal\cf0 .newClear(size.nextPowerOfTwo);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size.nextPowerOfTwo);\
+\
+\
+complex = fft(real, imag, cosTable);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // look at the kernel\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 real.plot;\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.ampdb.plot(minval: -120, maxval: 3);\
+)\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf3 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 That looks good! A highpass filter, exactly as we expect!!\
+\
+Let's try with an even kernel size:\cf3 \
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 \
+// kernel size = 128, 2.5Hz cutoff, 10Hz sampling rate\
+// view spectrum in dB\cf0 \
+(\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 128, fc = 2.5, fs = 10.0, real, imag, cosTable, complex;\
+\cf5 var\cf0  win;\
+\
+win = \cf2 Signal\cf0 .hanningWindow(size);\
+\
+real = \cf4 ~hipassc\cf0 .value(size, fc, fs);\
+real = real * win;					\cf3 // window w/ Hann window!\cf0 \
+imag = \cf2 Signal\cf0 .newClear(size);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size);\
+\
+complex = fft(real, imag, cosTable);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // look at the kernel\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 real.plot;\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.ampdb.plot(minval: -120, maxval: 3);\
+)\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 Hmm... the result isn't exactly as we'd expect. The reason being... sinc isn't really giving us an allpass filter! Instead, sinc is giving us a lowpass filter with a cutoff at the Nyquist frequency. (This much clearer in the version of 
+\f1 \cf4 ~hipassc
+\f0 \cf0  we defined as the difference of two ideal lowpass filters!!) We're seeing this is our frequency plot.\
+\
+\
+b) Bandpass from Lowpass\
+\
+The above suggests that we can derive a bandpass from two lowpass filters:\
+\
+BP = LP1 - LP0\
+\
+\
+Where, the first lowpass (LP1) defines the upper cutoff frequency and the second lowpass (LP0) defines the lower. \
+\
+\
+In discrete time, our bandpass filter, will look like this:\
+\
+\
+y[nT] = w1T/\uc0\u960  sinc(w1nT/\u960 ) - w0T/\u960  sinc(w0nT/\u960 )\
+\
+where: \
+\
+fc0 = lower cutoff frequency (Hz)\
+fc1 = lower cutoff frequency (Hz)\
+w0 = 2\uc0\u960  fc0 = radian freq. (radian frequency)\
+w1 = 2\uc0\u960  fc1 = radian freq. (radian frequency)\
+n = sample number\
+fs = sampling rate (samp/sec)\
+T = sampling period (1/fs) (sec)\
+\
+\
+Here's how we'll do that in SC:\
+\
+
+\f1 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // sinc bandpass (complementary)\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~bapassc\cf0  = \{ \cf5 arg\cf0  size, freq, bw, fs;\
+	\cf5 var\cf0  freq0, freq1, w0, w1, sp;\
+	\
+	\cf3 // compute freqs\cf0 \
+	freq0 = freq - (bw/2);\
+	freq1 = freq + (bw/2);\
+	\
+	\cf3 // compute radian freqs\cf0 \
+	w0 = 2 * pi * freq0;\
+	w1 = 2 * pi * freq1;\
+	\cf3 // compute sampling period\cf0 \
+	sp = fs.reciprocal;\
+	\
+	size.collect(\{\cf5 arg\cf0  n;\
+		(w1 * sp / pi * \cf4 ~sinc\cf0 .value(w1 * sp / pi * (n - ((size-1)/2)))) - (w0 * sp / pi * \cf4 ~sinc\cf0 .value(w0 * sp / pi * (n - ((size-1)/2))))\
+	\}).as(\cf2 Signal\cf0 )\
+\}\
+)\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 ... OR... since we already have 
+\f1 \cf4 ~lowpass
+\f0 \cf0  defined, let's rewrite as:\
+\
+\
+
+\f1 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // sinc bandpass (complementary)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~bapassc\cf0  = \{ \cf5 arg\cf0  size, freq, bw, fs;\
+	\cf5 var\cf0  freq0, freq1;\
+	\
+	\cf3 // compute freqs\cf0 \
+	freq0 = freq - (bw/2);\
+	freq1 = freq + (bw/2);\
+	\
+	\cf4 ~lowpass\cf0 .value(size, freq1, fs) - \cf4 ~lowpass\cf0 .value(size, freq0, fs);\
+\}\
+)
+\f0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf0 \
+\
+
+\f0 Let's have a look:
+\f1 \
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // kernel size = 128, 2.0Hz centre freq, 1.0Hz bandwidth, 10Hz sampling rate\
+// view spectrum in dB\cf0 \
+(\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 128, f = 2.0, bw = 1.0, fs = 10.0, real, imag, cosTable, complex;\
+\cf5 var\cf0  win;\
+\
+win = \cf2 Signal\cf0 .hanningWindow(size);\
+\
+real = \cf4 ~bapassc\cf0 .value(size, f, bw, fs);\
+real = real * win;					\cf3 // window w/ Hann window!\cf0 \
+imag = \cf2 Signal\cf0 .newClear(size);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size);\
+\
+complex = fft(real, imag, cosTable);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // look at the kernel\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 real.plot;\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.ampdb.plot(minval: -120, maxval: 3);\
+)\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 And, what about odd kernel lengths?\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // kernel size = 127, 2.0Hz centre freq, 1.0Hz bandwidth, 10Hz sampling rate\
+// view spectrum in dB\cf0 \
+\cf3 // we'll have to zero pad for odd size\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 127, f = 2.0, bw = 1.0, fs = 10.0, real, imag, cosTable, complex;\
+\cf5 var\cf0  win;\
+\
+win = \cf2 Signal\cf0 .hanningWindow(size);\
+\
+real = \cf4 ~bapassc\cf0 .value(size, f, bw, fs);\
+real = real * win;					\cf3 // window w/ Hann window!\cf0 \
+imag = \cf2 Signal\cf0 .newClear(size.nextPowerOfTwo);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // zero pad real\cf0 \
+real = real.extend(size.nextPowerOfTwo, 0);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size.nextPowerOfTwo);\
+\
+complex = fft(real, imag, cosTable);\
+\
+\cf3 // look at the kernel\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 real.plot;\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.ampdb.plot(minval: -120, maxval: 3);\
+)\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 Hurrah! Looks like we expect!!\
+\
+\
+c) Bandstop from Lowpass\
+\
+... and we do... what?\
+\
+... what about shelving filters?\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b \cf0 3) Spectrum reflection method (spectral inversion)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b0 \cf0 \
+Turns out there's another simple way to create a highpass from a lowpass response. This method reflects our prototype lowpass filter across the Nyquist frequency.\
+\
+This works because 
+\i multiplication
+\i0  in \ul time\ulnone  is 
+\i convolution
+\i0  in \ul frequency\ulnone \
+\
+a) Highpass from Lowpass\
+\
+Here, we'll simply multiply our lowpass filter in the time domain by a cosine at the Nyquist.\
+\
+\
+y[nT] = cos(\uc0\u960 n) * wT/\u960  sinc(wnT/\u960 )\
+\
+where: \
+\
+fc = cutoff frequency (Hz)\
+w = 2\uc0\u960  fc = radian freq. (radian frequency)\
+n = sample number\
+fs = sampling rate (samp/sec)\
+T = sampling period (1/fs) (sec)\
+\
+\
+.... Ok, actually this doesn't work... we'll need to reflect the cutoff frequency across the Nyquist, too:\
+\
+\
+y[nT] = cos(\uc0\u960 n) * (1 - wT/\u960 ) sinc(n * (1 - wT/\u960 ))\
+\
+where: \
+\
+fc = cutoff frequency (Hz)\
+w = 2\uc0\u960  fc = radian freq. (radian frequency)\
+n = sample number\
+fs = sampling rate (samp/sec)\
+T = sampling period (1/fs) (sec)\
+\
+\
+In SC:\
+\
+
+\f1 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // sinc highpass (reflected)\
+// using cos to reflect about Nyquist\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~hipassr\cf0  = \{ \cf5 arg\cf0  size, freq, fs;\
+	\cf5 var\cf0  w, sp;\
+	\
+	\cf3 // compute radian freq\cf0 \
+	w = 2 * pi * freq;\
+	\cf3 // compute sampling period\cf0 \
+	sp = fs.reciprocal;\
+	\
+	size.collect(\{\cf5 arg\cf0  n;\
+		cos(pi * (n - ((size-1)/2))) * (1 - (w * sp / pi)) *\
+		\cf4 ~sinc\cf0 .value((n - ((size-1)/2)) * (1 - (w * sp / pi)))\
+	\}).as(\cf2 Signal\cf0 )\
+\}\
+)\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 ... OR... since we already have 
+\f1 \cf4 ~lowpass
+\f0 \cf0  defined, let's rewrite as:\
+\
+\
+
+\f1 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // sinc highpass (reflected)\
+// using cos to reflect about Nyquist\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~hipassr\cf0  = \{ \cf5 arg\cf0  size, freq, fs;\
+	\cf5 var\cf0  freqcr;\
+	\
+	\cf3 // compute lowpass cutoff\
+	// as reflected frequency\cf0 \
+	freqcr = fs/2 - freq;\
+	\
+	size.collect(\{\cf5 arg\cf0  n;\
+		cos(pi * (n - ((size-1)/2)))\
+	\}).as(\cf2 Signal\cf0 ) * \cf4 ~lowpass\cf0 .value(size, freqcr, fs);\
+\}\
+)
+\f0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf0 \
+\
+\
+
+\f0 Let's start with odd sized kernels:
+\f1 \
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // kernel size = 127, 2.5Hz cutoff, 10Hz sampling rate\
+// view spectrum in dB\cf0 \
+\cf3 // we'll have to zero pad for odd size\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 127, fc = 2.5, fs = 10.0, real, imag, cosTable, complex;\
+\cf5 var\cf0  win;\
+\
+win = \cf2 Signal\cf0 .hanningWindow(size);\
+\
+real = \cf4 ~hipassr\cf0 .value(size, fc, fs);\
+real = real * win;					\cf3 // window w/ Hann window!\cf0 \
+real = real.extend(size.nextPowerOfTwo, 0);	\cf3 // zero pad real\cf0 \
+\
+imag = \cf2 Signal\cf0 .newClear(size.nextPowerOfTwo);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size.nextPowerOfTwo);\
+\
+\
+complex = fft(real, imag, cosTable);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // look at the kernel\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 real.plot;\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.ampdb.plot(minval: -120, maxval: 3);\
+)\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 Compare to the version of the highpass kernel produced via the complementary filter method.\
+\
+
+\f1 \
+
+\f0 How about even kernels?\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // kernel size = 128, 2.5Hz cutoff, 10Hz sampling rate\
+// view spectrum in dB\cf0 \
+(\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 128, fc = 2.5, fs = 10.0, real, imag, cosTable, complex;\
+\cf5 var\cf0  win;\
+\
+win = \cf2 Signal\cf0 .hanningWindow(size);\
+\
+real = \cf4 ~hipassr\cf0 .value(size, fc, fs);\
+real = real * win;					\cf3 // window w/ Hann window!\cf0 \
+imag = \cf2 Signal\cf0 .newClear(size);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size);\
+\
+complex = fft(real, imag, cosTable);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // look at the kernel\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 real.plot;\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.ampdb.plot(minval: -120, maxval: 3);\
+)\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 Doh!!! This is drastically wrong!! We get a nopass filter!!\
+\
+Why is that?\
+\
+As an experiment, let's try to replace the cos with a sin, to do the reflection across Nyquist:\
+\
+
+\f1 \
+(\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // sinc highpass (reflected)\
+// using sin to reflect about Nyquist\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~hipassr\cf0  = \{ \cf5 arg\cf0  size, freq, fs;\
+	\cf5 var\cf0  freqcr;\
+	\
+	\cf3 // compute lowpass cutoff\
+	// as reflected frequency\cf0 \
+	freqcr = fs/2 - freq;\
+	\
+	size.collect(\{\cf5 arg\cf0  n;\
+		sin(pi * (n - ((size-1)/2)))\
+	\}).as(\cf2 Signal\cf0 ) * \cf4 ~lowpass\cf0 .value(size, freqcr, fs);\
+\}\
+)
+\f0 \
+\
+\
+And then retry the above even kernel...\
+\
+Ah... this time we get a highpass filter. That's good!! But it still doesn't exactly solve the above problem.\
+\
+\
+We could do something like this:\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf0 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // sinc highpass (reflected)\
+// using cos to reflect about Nyquist for even size\
+// using sin to reflect about Nyquist for odd size\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~hipassr\cf0  = \{ \cf5 arg\cf0  size, freq, fs;\
+	\cf5 var\cf0  freqcr;\
+	\
+	\cf3 // compute lowpass cutoff\
+	// as reflected frequency\cf0 \
+	freqcr = fs/2 - freq;\
+	\
+	size.odd.if(\{\
+		size.collect(\{\cf5 arg\cf0  n;\
+			cos(pi * (n - ((size-1)/2)))\
+		\}).as(\cf2 Signal\cf0 ) * \cf4 ~lowpass\cf0 .value(size, freqcr, fs);\
+	\}, \{\
+		size.collect(\{\cf5 arg\cf0  n;\
+			sin(pi * (n - ((size-1)/2)))\
+		\}).as(\cf2 Signal\cf0 ) * \cf4 ~lowpass\cf0 .value(size, freqcr, fs);\
+	\})\
+\}\
+)\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+b) Generalised reflection... towards bandbass\
+\
+While the above works, it is probably much better to be systematic about the problem of reflection, which is what we'll need to do anyway for bandpass filters.\
+\
+We'll skip the math, and just go straight to SC implementations of a generic reflection kernel, followed by a Nyquist reflection kernel based on the generic kernel.\
+\
+
+\f1 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // spectral reflection kernel\
+// reflect about an arbitrary frequency\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~reflect\cf0  = \{ \cf5 arg\cf0  size, freq, fs;\
+	\cf5 var\cf0  w, sp;\
+	\
+	\cf3 // compute radian freq\cf0 \
+	w = 2 * pi * freq;\
+	\cf3 // compute sampling period\cf0 \
+	sp = fs.reciprocal;\
+\
+	size.odd.if(\{\
+		size.collect(\{\cf5 arg\cf0  n;\
+			2 * cos(w * sp * (n - ((size-1)/2)))\
+		\}).as(\cf2 Signal\cf0 )\
+	\}, \{\
+		size.collect(\{\cf5 arg\cf0  n;\
+			2 * sin((w * sp * (n - ((size-1)/2))) + (cos(w * sp / 2) * pi/2))\
+		\}).as(\cf2 Signal\cf0 )\
+	\})\
+\}\
+)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+
+\f1 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // Nyquist reflection kernel\cf0 \
+\cf3 // reflect about the Nyquist frequency\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~nyq_reflect\cf0  = \{ \cf5 arg\cf0  size;\
+	0.5 * \cf4 ~reflect\cf0 .value(size, 0.5, 1.0)\
+\}\
+)\
+\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 Now that we have this Nyquist frequency reflection kernel, let's go back to designing highpass filters. Our new highpass kernel generator can now be make like this:\
+\
+
+\f1 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // sinc highpass (reflected)\
+// using \cf4 ~nyq_reflect\cf3  to reflect about Nyquist\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~hipassr\cf0  = \{ \cf5 arg\cf0  size, freq, fs;\
+	\cf5 var\cf0  freqcr;\
+	\
+	\cf3 // compute lowpass cutoff\
+	// as reflected frequency\cf0 \
+	freqcr = fs/2 - freq;\
+	\
+	\cf4 ~nyq_reflect\cf0 .value(size) * \cf4 ~lowpass\cf0 .value(size, freqcr, fs);\
+\}\
+)\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+Let's now look again at generating a reflected highpass filter with odd sized kernels:
+\f1 \
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // kernel size = 127, 3.5Hz cutoff, 10Hz sampling rate\
+// view spectrum in dB\cf0 \
+\cf3 // we'll have to zero pad for odd size\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 127, fc = 3.5, fs = 10.0, real, imag, cosTable, complex;\
+\cf5 var\cf0  win;\
+\
+win = \cf2 Signal\cf0 .hanningWindow(size);\
+\
+real = \cf4 ~hipassr\cf0 .value(size, fc, fs);\
+real = real * win;					\cf3 // window w/ Hann window!\cf0 \
+real = real.extend(size.nextPowerOfTwo, 0);	\cf3 // zero pad real\cf0 \
+\
+imag = \cf2 Signal\cf0 .newClear(size.nextPowerOfTwo);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size.nextPowerOfTwo);\
+\
+\
+complex = fft(real, imag, cosTable);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // look at the kernel\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 real.plot;\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.ampdb.plot(minval: -120, maxval: 3);\
+\cf3 //complex.magnitude.ampdb.plot(minval: -12, maxval: 12);\cf0 \
+\cf3 //complex.magnitude.ampdb.plot;\cf0 \
+)\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 .. And a reflected highpass filter with even sized kernels:\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // kernel size = 128, 3.5Hz cutoff, 10Hz sampling rate\
+// view spectrum in dB\cf0 \
+(\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 128, fc = 3.5, fs = 10.0, real, imag, cosTable, complex;\
+\cf5 var\cf0  win;\
+\
+win = \cf2 Signal\cf0 .hanningWindow(size);\
+\
+real = \cf4 ~hipassr\cf0 .value(size, fc, fs);\
+real = real * win;					\cf3 // window w/ Hann window!\cf0 \
+\
+imag = \cf2 Signal\cf0 .newClear(size);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size);\
+\
+\
+complex = fft(real, imag, cosTable);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // look at the kernel\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 real.plot;\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.ampdb.plot(minval: -120, maxval: 3);\
+\cf3 //complex.magnitude.ampdb.plot(minval: -120, maxval: 6);\cf0 \
+)\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 Hurrah! Both of these are doing what we expect!!\
+\
+\
+c) Bandpass from reflection\
+\
+Now that we've conveniently created the generic reflection kernel 
+\f1 \cf4 ~reflect
+\f0 \cf0 , we can easily generate bandpass filters through reflection. This will be easy as \uc0\u960 .\
+\
+We'll first generate an ideal lowpass filter (sinc) with 1/2 the desired bandwidth, and then reflect it around a center frequency using the generic reflection kernel 
+\f1 \cf4 ~reflect
+\f0 \cf0 . In practice, we are multiplying the lowpass kernel in the time domain with a sinusoid, which means we are convolving the spectrum of the lowpass kernel with that of the sinusoid. This gives us a reflection about the sinusoid, which we set to the centre frequency of our bandpass filter.\
+\
+\
+
+\f1 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // sinc bandpass (reflected)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf4 ~bapassr\cf0  = \{ \cf5 arg\cf0  size, freq, bw, fs;\
+	\cf5 var\cf0  freqc;\
+	\
+	\cf3 // compute freqc\cf0 \
+	freqc = bw/2;\
+	\
+	\cf4 ~reflect\cf0 .value(size, freq, fs) * \cf4 ~lowpass\cf0 .value(size, freqc, fs);\
+\}\
+)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+\
+Let's try it out....\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // kernel size = 128, 2.0Hz centre freq, 1.0Hz bandwidth, 10Hz sampling rate\
+// view spectrum in dB\cf0 \
+(\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 128, f = 2.0, bw = 1.0, fs = 10.0, real, imag, cosTable, complex;\
+\cf5 var\cf0  win;\
+\
+win = \cf2 Signal\cf0 .hanningWindow(size);\
+\
+real = \cf4 ~bapassr\cf0 .value(size, f, bw, fs);\
+real = real * win;					\cf3 // window w/ Hann window!\cf0 \
+imag = \cf2 Signal\cf0 .newClear(size);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size);\
+\
+complex = fft(real, imag, cosTable);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // look at the kernel\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 real.plot;\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.ampdb.plot(minval: -120, maxval: 3);\
+)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+\
+And, what about odd kernel lengths?\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // kernel size = 127, 2.0Hz centre freq, 1.0Hz bandwidth, 10Hz sampling rate\
+// view spectrum in dB\cf0 \
+\cf3 // we'll have to zero pad for odd size\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 (\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf5 var\cf0  size = 127, f = 2.0, bw = 1.0, fs = 10.0, real, imag, cosTable, complex;\
+\cf5 var\cf0  win;\
+\
+win = \cf2 Signal\cf0 .hanningWindow(size);\
+\
+real = \cf4 ~bapassr\cf0 .value(size, f, bw, fs);\
+real = real * win;					\cf3 // window w/ Hann window!\cf0 \
+imag = \cf2 Signal\cf0 .newClear(size.nextPowerOfTwo);\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // zero pad real\cf0 \
+real = real.extend(size.nextPowerOfTwo, 0);\
+\
+cosTable = \cf2 Signal\cf0 .fftCosTable(size.nextPowerOfTwo);\
+\
+complex = fft(real, imag, cosTable);\
+\
+\cf3 // look at the kernel\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 real.plot;\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 \
+// look at the magnitude spectrum of the kernel\cf0 \
+complex.magnitude.ampdb.plot(minval: -120, maxval: 3);\
+)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+\
+An interesting thing to notice, is that even length bandpass filters designed with the reflection method (using our reflection kernel defined by 
+\f1 \cf4 ~reflect
+\f0 \cf0 ) don't have the same IR as those designed via the complementary filter method. The reason for this is that we've defined 
+\f1 \cf4 ~reflect
+\f0 \cf0  so that we can generate sinusoids with unity gain all the way up to the Nyquist. The result is that we introduce a phase shift in even length bandpass filters.\
+\
+d) Bandstop via reflection\
+\
+... and we do... what?\
+\
+... what about shelving filters?\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b \cf0 4) In SC, in practice\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\b0 \cf0 \
+a) Convolution with 
+\f1 \cf2 Convolution2
+\f0 \cf0 \
+\
+The filters's we've designed with the above method are easily used for signal processing via SC's internal convolution UGens.\
+\
+To start with we'll go ahead and design a bandpass filter using the reflection method.\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // first, turn on the server!!!\cf0 \
+\cf3 // ------------------------------------------------------------\cf0 \
+\cf3 // switch to internal server, and boot\cf0 \
+(\
+	s = \cf2 Server\cf0 .internal;\
+	\cf2 Server\cf0 .default = s;\
+	s.boot;\
+)\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // then, define the filter kernel...\
+// kernel size = 1024, 500.0Hz centre freq, 500.0Hz bandwidth\cf0 \
+(	\
+	\cf5 var\cf0  size = 1024, f = 500.0, bw = 500.0, win;\
+	\
+	win = \cf2 Signal\cf0 .hanningWindow(size);\
+	\
+	\cf4 ~kernel\cf0  = \cf4 ~bapassr\cf0 .value(size, f, bw, s.sampleRate);\
+	\cf4 ~kernel\cf0  = \cf4 ~kernel\cf0  * win;					\cf3 // window w/ Hann window!\cf0 \
+	\
+	\cf4 ~kernel\cf0 .plot;\
+	\
+	\cf3 // ... now, load the kernel into a buffer\cf0 \
+	b = \cf2 Buffer\cf0 .loadCollection(s, \cf4 ~kernel\cf0 );\
+)\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f0 \cf0 \
+
+\f1 \cf2 FreqScope\cf0 .new;			\cf3 // and let's look!!\
+						// allocate FreqScope here,\
+						// to avoid a bug with\
+						// buffer allocation!\
+\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf3 // run in SC!! with Convolution2.ar\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf0 (	\
+x = \{ \cf5 var\cf0  input, kernel;\
+	\
+	input = \cf2 WhiteNoise\cf0 .ar(-3.dbamp);\
+	\
+	\cf2 Out\cf0 .ar(\
+		0,\
+		\cf2 Convolution2\cf0 .ar(input, b.bufnum, framesize: \cf4 ~kernel\cf0 .size)\
+		)\
+\}.play;\
+)\
+\
+x.free\
+b.free			\cf3 // free buffer kernel!!!!!\cf0 \
+\
+\
+
+\f0 b) Spectral mirroring in real-time!\
+\
+Let's have a look at how we can use spectral mirroring (the method we use to move around the ideal lowpass filter to generate other filter types) in real-time.\
+\
+Here, we'll move a filter around...\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+
+\f1 \cf3 // first, turn on the server!!!\cf0 \
+\cf3 // ------------------------------------------------------------\cf0 \
+\cf3 // switch to internal server, and boot\cf0 \
+(\
+	s = \cf2 Server\cf0 .internal;\
+	\cf2 Server\cf0 .default = s;\
+	s.boot;\
+)\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\ql\qnatural\pardirnatural
+\cf2 FreqScope\cf0 .new;			\cf3 // and let's look!!\
+\
+// run in SC!!\
+\cf0 (\
+x = \{ \cf5 var\cf0  input, output, freq;\
+	\cf5 var\cf0  quadOsc;\
+	\
+	freq = \cf2 MouseX\cf0 .kr(0, s.sampleRate/2);	\
+	freq.poll;\
+	\
+	quadOsc = \cf2 SinOsc\cf0 .ar(freq, [ pi/2, 0 ]);\
+	\
+	input = \cf2 WhiteNoise\cf0 .ar(-18.dbamp);\
+	\
+	\
+	output = input * quadOsc;\
+\cf6 	output = \cf7 LPF\cf6 .ar(output, 1000.0);\
+\cf8 //	output = HPF.ar(output, 1000.0);\cf6 \
+\cf0 	output = output * quadOsc;\
+	output = output.sum;\
+	\
+	\cf2 Out\cf0 .ar(\
+		0,\
+		output\
+		)\
+\}.play;\
+)\
+\
+x.free\
+}

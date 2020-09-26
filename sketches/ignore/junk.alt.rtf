@@ -1,0 +1,66 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf230
+{\fonttbl\f0\fnil\fcharset0 Candara;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue191;\red191\green0\blue0;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs26 \cf0 		// CIRCLES RESET SIZE\
+		for (0, ~animae.size, \{\cf2 arg\cf0  i;\
+				~animae[i].size.x = 30;\
+				~animae[i].size.y = 30;\
+				~animae[i].move;\
+			\});\
+\
+		for (0, ~pieceLength/64, \{arg x;\
+			\
+			for (0, ~animae.size-1, \{\cf2 arg\cf0  i;\
+				~animae[i].velocity.x = ~animae[i].velocity.x + 5;\
+				~animae[i].move;\
+			\});\
+\
+			(1/30).wait;\
+			~userview.refresh;	\
+\
+		for (0, ~pieceLength/64, \{\
+			\
+			for (0, ~animae.size-1, \{\cf2 arg\cf0  i;\
+				~animae[i].move;\
+			\});\
+\
+			(1/30).wait;\
+			~userview.refresh;	\
+		\});\
+			\});		\
+			\
+			\
+			\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+\cf3 //		// broken		\cf0 \
+\cf3 //		// WAVE 1: SQUARES: DUMP\cf0 \
+\cf3 //		for (0, 200, \{arg i;\cf0 \
+\cf3 //			~animae.removeAt(i);\cf0 \
+\cf3 //			~animae.postln;\cf0 \
+\cf3 //			\cf0 \
+\cf3 //		\});		\cf0 \
+\
+			\
+			\
+					// BARS: SPLIT\
+		for (0, ~animae.size-1/2, \{\cf2 arg\cf0  i;\
+				~animae[i].strategy=Wave;\
+			\});	\
+\
+\
+\cf3 //		// insert fade\cf0 \
+\cf3 //		\cf0 \
+\cf3 //		// BARS:  PLAY STATE\cf0 \
+\cf3 //		for (0, ~pieceLength/8, \{arg x;\cf0 \
+\cf3 //			\cf0 \
+\cf3 //			for (0, ~animae.size-1, \{arg i;\cf0 \
+\cf3 //				~animae[i].move;\cf0 \
+\cf3 //			\});\cf0 \
+\cf3 //\cf0 \
+\cf3 //			(1/30).wait;\cf0 \
+\cf3 //			~userview.refresh;	\cf0 \
+\cf3 //		\});\cf0 \
+			\
+		}

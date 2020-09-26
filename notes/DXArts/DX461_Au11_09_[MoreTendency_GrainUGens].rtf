@@ -1,0 +1,331 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf230
+{\fonttbl\f0\fnil\fcharset0 Monaco;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red0\green0\blue255;\red102\green102\blue191;
+\red0\green0\blue191;\red0\green115\blue0;\red191\green0\blue0;\red96\green96\blue96;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural
+
+\f0\fs24 \cf2 \
+\
+(\
+\cf3 var\cf2  singrain, fmgrain;\
+\cf3 var\cf2  score, grains;\
+\
+\cf4 thisThread\cf2 .randSeed_(1234);\
+\
+score = \cf5 CtkScore\cf2 .new;\
+\
+singrain = \cf5 CtkSynthDef\cf2 (\cf6 \\singraina\cf2 , \{\cf3 arg\cf2  dur = 1, amp = -3, freq = 440;\
+	\cf3 var\cf2  env, halfdur, car;\
+	halfdur = dur * 0.5;\
+	amp = amp.dbamp;\
+	env = \cf5 EnvGen\cf2 .kr(\cf5 Env\cf2 ([0, amp, 0], [halfdur, halfdur], \cf6 \\sin\cf2 ));\
+	car = \cf5 SinOsc\cf2 .ar(freq, 0, 1);\
+	\cf5 OffsetOut\cf2 .ar(0, \cf5 Pan2\cf2 .ar(car * env, 0));\
+	\});\
+\
+fmgrain = \cf5 CtkSynthDef\cf2 (\cf6 \\fmgraina\cf2 , \{\cf3 arg\cf2  dur = 1, amp = -3, carfreq = 440, modfreq = 220, dev = 1;\
+	\cf3 var\cf2  env, halfdur, mod, car;\
+	halfdur = dur * 0.5;\
+	amp = amp.dbamp;\
+	dev = dev * modfreq;\
+	env = \cf5 EnvGen\cf2 .ar(\
+		\cf5 Env\cf2 ([0, amp, 0], [halfdur, halfdur], \cf6 \\sin\cf2 ));\
+	mod = \cf5 SinOsc\cf2 .ar(modfreq, 0, dev);\
+	car = \cf5 SinOsc\cf2 .ar(carfreq + mod, 0, 1);\
+	\cf5 OffsetOut\cf2 .ar(0, \cf5 Pan2\cf2 .ar(car * env, 0));\
+	\});\
+	\
+\cf7 // creates sinusoidal or fm grains - periodic or not (depending on the parameters passed in)\cf2 \
+\
+grains = \{\cf3 arg\cf2  starttime, duration, grainAmp = -24, grainDur = 0.1, \
+		maxDensity = 10, minDensity = 10, grainMaxFreq = 500, \
+		grainMinFreq = 400, modFreqRatio, modIndex;\
+	\cf3 var\cf2  now, n, freq, density, dur, rDuration, noteDur, noteFreq, \
+		noteAmp, thisDensity, modFreq, idx;\
+	now = 0.0;\
+	rDuration = duration.reciprocal;\
+	freq = \cf5 Tendency\cf2 (grainMinFreq, grainMaxFreq);\
+	density = \cf5 Tendency\cf2 (minDensity, maxDensity);\
+	while(\{\
+		n = now * rDuration;\
+		noteFreq = freq.at(n);\
+		thisDensity = density.at(n);\
+		\cf7 // check if grainDur is an Env - if it is, call .at(n). \cf2 \
+		\cf7 // Otherwise, call .value(n). This lets grainDur be an Env, \cf2 \
+		\cf7 // Number OR a function that can use 'n' as an arg.\cf2 \
+		noteDur = grainDur.isKindOf(\cf5 Env\cf2 ).if(\{\
+			grainDur.at(n)\
+			\}, \{\
+			grainDur.value(n);\
+			\});\
+		noteAmp = grainAmp.isKindOf(\cf5 Env\cf2 ).if(\{\
+			grainAmp.at(n)\
+			\}, \{\
+			grainAmp.value(n);\
+			\});\
+		\cf7 // check what kind of note we are creating. If modFreqRatio AND \cf2 \
+		\cf7 // modIndex are both values, create FM note\cf2 \
+		(modFreqRatio.notNil and: \{modIndex.notNil\}).if(\{\
+			modFreq = modFreqRatio.isKindOf(\cf5 Env\cf2 ).if(\{\
+				modFreqRatio.at(n);\
+				\}, \{\
+				modFreqRatio.value(n);\
+				\});\
+			idx = modIndex.isKindOf(\cf5 Env\cf2 ).if(\{\
+				modIndex.at(n);\
+				\}, \{\
+				modIndex.value(n);\
+				\});\
+			score.add(\
+				fmgrain.note(now + starttime, noteDur).dur_(noteDur)\
+					.amp_(noteAmp).carfreq_(noteFreq)\
+					.modfreq_(noteFreq * modFreq).dev_(idx));\
+			\}, \{\
+			score.add(\
+				singrain.note(now + starttime, noteDur).dur_(noteDur)\
+					.amp_(noteAmp).freq_(noteFreq).amp_(noteAmp))\
+			\});\
+		\cf7 // divide the noteDur by thisDensity to create overlapping events.\cf2 \
+		now = now + (noteDur / thisDensity);\
+		now < duration;\
+		\})\
+	\};\
+\
+\cf7 // 100 grains per second (density of 10, grain size of 0.1)\cf2 \
+\
+grains.value(1.0, 9.0);\
+\
+\
+\cf7 // chaning grain duraiton over time\cf2 \
+\cf7 /*\
+grains.value(1.0, 9.0, grainDur: Env([0.01, 0.5, 0.01], [0.5, 0.5]));\
+*/\cf2 \
+\
+\cf7 // changing density over time\cf2 \
+\cf7 /*\
+grains.value(1.0, 9.0, maxDensity: Env([1, 10, 1], [0.5, 0.5]), \
+	minDensity: Env([1, 10, 1], [0.5, 0.5]));\
+*/\cf2 \
+\cf7 // longer grains, enhancing a band between 1000 and 1500\cf2 \
+\cf7 /*\
+grains.value(1.0, 9.0, grainDur: Env([0.1, 0.2, 0.1], [0.5, 0.5]),\
+	maxDensity: Env([200, 200, 700, 700], [0.3, 0.4, 0.3]),\
+	minDensity: Env([100, 100, 500, 500], [0.3, 0.4, 0.3]),\
+	grainMaxFreq: 1500,\
+	grainMinFreq: 1000,\
+	grainAmp: Env([-60, -30, -30, -60], [0.3, 0.4, 0.3]));\
+*/\cf2 \
+\cf7 // FM grains\cf2 \
+\cf7 /*\
+grains.value(1.0, 9.0, grainDur: Env([0.01, 0.1, 0.01], [0.5, 0.5]), modFreqRatio: 1.6666, \
+	modIndex: 1.0);\
+*/\cf2 \
+\cf7 // changing index over time\cf2 \
+\cf7 /*\
+grains.value(1.0, 9.0, grainDur: 0.1, modFreqRatio: 1.6666, modIndex: Env([1, 4, 1], [0.5, 0.5]));\
+*/\cf2 \
+\cf7 // changing index and modfreq over time\cf2 \
+\cf7 /*\
+grains.value(1.0, 9.0, grainDur: 0.1, modFreqRatio: Env([1.6666, 4.0, 1.666], [0.5, 0.5]), \
+	modIndex: Env([1, 4, 1], [0.5, 0.5]));\
+*/\cf2 \
+\cf7 // changing index, modfreq, density and grainamp over time\cf2 \
+\cf7 /*\
+grains.value(1.0, 9.0, grainDur: 0.1, \
+	modFreqRatio: Env([1.6666, 4.0, 1.666], [0.5, 0.5]), \
+	modIndex: Env([1, 4, 1], [0.5, 0.5]),\
+	maxDensity: Env([200, 20, 200], [0.5, 0.5]),	\
+	minDensity: Env([200, 20, 200], [0.5, 0.5]),\
+	grainMaxFreq: 300,\
+	grainMinFreq: 200,\
+	grainAmp: Env([-60, -24, -60], [0.5, 0.5])\
+	);\
+*/\cf2 \
+\
+\cf7 // score.play;\cf2 \
+score.write(\cf8 "~/Desktop/test.aif"\cf2 .standardizePath, \
+	options: \cf5 ServerOptions\cf2 .new.numOutputBusChannels_(2));\
+\
+)\
+\
+a = \cf5 SFPlayer\cf2 .new(\cf8 "~/Desktop/test.aif"\cf2 .standardizePath).gui;\
+\
+\
+(\
+\cf5 Server\cf2 .default = s = \cf5 Server\cf2 .internal.boot;\
+s.waitForBoot(\{\
+	s.scope\
+	\})\
+)\
+\
+(\
+\cf3 var\cf2  note, score;\
+\
+score = \cf5 CtkScore\cf2 .new;\
+\
+note = \cf5 CtkSynthDef\cf2 (\cf6 \\periodic\cf2 , \{\cf3 arg\cf2  duration, grainPeriod, grainMinFreq, grainMaxFreq, grainAmp, \
+		id = 1, seed = 123;\
+	\cf3 var\cf2  grains, env, freq, trigger;\
+	\cf5 RandID\cf2 .kr(id);\
+	\cf5 RandSeed\cf2 .kr(seed);\
+	env = \cf5 EnvGen\cf2 .kr(\cf5 Env\cf2 ([0, 1, 1, 0], [0.3, 0.4, 0.3], \cf6 \\sin\cf2 ), timeScale: duration);\
+	\cf7 // grains are produced with a trigger signal. This can be any UGen that changes from\cf2 \
+	\cf7 // <=0 to > 0. Impulse works well for this. If Impulse is used at 'ar', then Grain onsets\cf2 \
+	\cf7 // will be sample accurate. The reciporcal of our grain's duration is the freq we want\cf2 \
+	trigger = \cf5 Impulse\cf2 .ar(grainPeriod.reciprocal);\
+	\cf7 // to imitate a Tendency mask - we can use TRand, polling for a new random value\cf2 \
+	\cf7 // with every trigger.\cf2 \
+	freq = \cf5 TRand\cf2 .ar(grainMinFreq, grainMaxFreq, trigger);\
+	\cf7 // finally, the grains. The arguments to the UGen are polled whenever a trigger occurs, \cf2 \
+	\cf7 // so you can use a number of different UGens to control the synth\cf2 \
+	grains = \cf5 SinGrain\cf2 .ar(trigger, grainPeriod, freq, grainAmp);\
+	\cf5 Out\cf2 .ar(0, \cf5 Pan2\cf2 .ar(grains * env), 0);\
+	\});\
+	\
+score.add(\
+	note.note(1.0, 4.0).duration_(4.0).grainPeriod_(0.01).grainMinFreq_(400).grainMaxFreq_(5000)\
+		.grainAmp_(-12.dbamp));\
+		\
+score.play;\
+)\
+\
+\cf7 /* "BUT!" you may ask... "How do I get the flexibility I want with the Tendency mask?" ... excellent question. \
+Introducing CtkControl.env\
+This can be used for any parameter to a synth\
+*/\cf2 \
+\
+(\
+\cf3 var\cf2  note, score;\
+\
+score = \cf5 CtkScore\cf2 .new;\
+\
+note = \cf5 CtkSynthDef\cf2 (\cf6 \\periodic\cf2 , \{\cf3 arg\cf2  duration, grainPeriod, grainMinFreq, grainMaxFreq, grainAmp, \
+		id = 1, seed = 123;\
+	\cf3 var\cf2  grains, env, freq, trigger;\
+	\cf5 RandID\cf2 .kr(id);\
+	\cf5 RandSeed\cf2 .kr(seed);\
+\cf7 //	env = EnvGen.kr(Env([0, 1, 1, 0], [0.3, 0.4, 0.3], \\sin), timeScale: duration);\cf2 \
+	trigger = \cf5 Impulse\cf2 .ar(grainPeriod.reciprocal);\
+	freq = \cf5 TRand\cf2 .ar(grainMinFreq, grainMaxFreq, trigger);\
+	grains = \cf5 GrainSin\cf2 .ar(2, trigger, grainPeriod, freq, mul: grainAmp);\
+	\cf5 Out\cf2 .ar(0, grains);\
+	\});\
+	\
+score.add(\
+	note.note(1.0, 4.0).duration_(4.0).grainPeriod_(0.005)\
+		.grainMinFreq_(\cf5 CtkControl\cf2 .env(\cf5 Env\cf2 ([400, 800, 800], [0.5, 0.5], \cf6 \\exp\cf2 ), timeScale: 4))\
+		.grainMaxFreq_(\cf5 CtkControl\cf2 .env(\cf5 Env\cf2 ([900, 800, 900], [0.5, 0.5], \cf6 \\exp\cf2 ), timeScale: 4))\
+		.grainAmp_(\cf5 CtkControl\cf2 .env(\cf5 Env\cf2 ([0.0001, 1, 1, 0.0001], [0.1, 0.8, 0.1], \cf6 \\exp\cf2 ), timeScale: 4)));\
+		\
+score.play;\
+)\
+\
+(\
+\cf3 var\cf2  note, score;\
+\
+score = \cf5 CtkScore\cf2 .new;\
+\
+note = \cf5 CtkSynthDef\cf2 (\cf6 \\periodic\cf2 , \{\cf3 arg\cf2  duration, grainPeriod, grainMinFreq, grainMaxFreq, grainAmp, \
+		id = 1, seed = 123;\
+	\cf3 var\cf2  grains, env, freq, trigger, pan;\
+	\cf5 RandID\cf2 .kr(id);\
+	\cf5 RandSeed\cf2 .kr(seed);\
+	env = \cf5 EnvGen\cf2 .kr(\cf5 Env\cf2 ([0, 1, 1, 0], [0.3, 0.4, 0.3], \cf6 \\sin\cf2 ), timeScale: duration);\
+	trigger = \cf5 Impulse\cf2 .ar(grainPeriod.reciprocal);\
+	freq = \cf5 TRand\cf2 .ar(grainMinFreq, grainMaxFreq, trigger);\
+	pan = \cf5 TRand\cf2 .ar(-1, 1, trigger) * \cf5 Line\cf2 .kr(1, 0, duration * 0.5);\
+	\cf7 // first argument here is number of outputs. Use the 'pan' parameter\cf2 \
+	grains = \cf5 GrainSin\cf2 .ar(2, trigger, grainPeriod, freq, pan, mul: grainAmp);\
+	\cf5 Out\cf2 .ar(0, grains * env);\
+	\});\
+	\
+score.add(\
+	note.new(1.0, 4.0).duration_(4.0).grainPeriod_(0.02)\
+		.grainMinFreq_(\cf5 CtkControl\cf2 .env(\cf5 Env\cf2 ([200, 500, 400], [0.5, 0.5], \cf6 \\exp\cf2 ), timeScale: 4))\
+		.grainMaxFreq_(\cf5 CtkControl\cf2 .env(\cf5 Env\cf2 ([300, 500, 900], [0.5, 0.5], \cf6 \\exp\cf2 ), timeScale: 4))\
+		.grainAmp_(-12.dbamp));\
+		\
+score.play;\
+)\
+\
+\cf7 // BUT - the panning isn't very clear. Let's give each grain a sharper envelope\cf2 \
+\
+(\
+\cf3 var\cf2  note, score, buffer;\
+\
+a = score = \cf5 CtkScore\cf2 .new;\
+\
+buffer = \cf5 CtkBuffer\cf2 .new(size: 512);\
+\cf7 // there is a bug CtkScore... make sure you give this a time of 0.1... ergh\cf2 \
+buffer.fillWithEnv(0.1, env: \cf5 Env\cf2 ([0, 1, 0], [0.1, 0.9], [10, -10]));\
+\
+score.add(buffer);\
+\
+note = \cf5 CtkSynthDef\cf2 (\cf6 \\periodic\cf2 , \{\cf3 arg\cf2  duration, grainPeriod, grainMinFreq, grainMaxFreq, grainAmp, \
+		id = 1, seed = 123, envbuf;\
+	\cf3 var\cf2  grains, env, freq, trigger, pan;\
+	\cf5 RandID\cf2 .kr(id);\
+	\cf5 RandSeed\cf2 .kr(seed);\
+	env = \cf5 EnvGen\cf2 .kr(\cf5 Env\cf2 ([0, 1, 1, 0], [0.3, 0.4, 0.3], \cf6 \\sin\cf2 ), timeScale: duration);\
+	trigger = \cf5 Impulse\cf2 .ar(grainPeriod.reciprocal);\
+	freq = \cf5 TRand\cf2 .ar(grainMinFreq, grainMaxFreq, trigger);\
+	pan = \cf5 TRand\cf2 .ar(-1, 1, trigger) * \cf5 Line\cf2 .kr(1, 0, duration * 0.5);\
+	\cf7 // first argument here is number of outputs. \cf2 \
+	grains = \cf5 GrainSin\cf2 .ar(2, trigger, grainPeriod, freq, pan, envbuf, mul: grainAmp);\
+	\cf5 Out\cf2 .ar(0, grains * env);\
+	\});\
+	\
+score.add(\
+	note.note(0.1, 4.0).duration_(4.0).grainPeriod_(0.01)\
+		.grainMinFreq_(\cf5 CtkControl\cf2 .env(\cf5 Env\cf2 ([200, 500, 400], [0.5, 0.5], \cf6 \\exp\cf2 ), timeScale: 4))\
+		.grainMaxFreq_(\cf5 CtkControl\cf2 .env(\cf5 Env\cf2 ([300, 500, 900], [0.5, 0.5], \cf6 \\exp\cf2 ), timeScale: 4))\
+		.grainAmp_(-12.dbamp)\
+		.envbuf_(buffer));\
+\
+score.play;\
+)\
+\
+\
+\cf7 /* the FM Synth-O-Matic */\cf2 \
+\
+(\
+\cf3 var\cf2  note, score, buffer, thisnote;\
+\
+a = score = \cf5 CtkScore\cf2 .new;\
+\cf7 // There is now just a CtkBuffer.env creation method\cf2 \
+buffer = \cf5 CtkBuffer\cf2 .env(size: 512, env:\cf5 Env\cf2 ([0, 1, 0], [0.1, 0.9], [10, -10]));\
+\cf7 //buffer.fillWithEnv(env: Env([0, 1, 0], [0.1, 0.9], [10, -10]));\cf2 \
+\
+score.add(buffer);\
+\
+note = \cf5 CtkSynthDef\cf2 (\cf6 \\periodic\cf2 , \{\cf3 arg\cf2  duration, grainPeriod, grainMinFreq, grainMaxFreq, grainAmp, \
+		id = 1, seed = 123, envbuf = -1;\
+	\cf3 var\cf2  grains, env, freq, trigger, pan;\
+	\cf5 RandID\cf2 .kr(id);\
+	\cf5 RandSeed\cf2 .kr(seed);\
+	env = \cf5 EnvGen\cf2 .kr(\cf5 Env\cf2 ([0, 1, 1, 0], [0.3, 0.4, 0.3], \cf6 \\sin\cf2 ), timeScale: duration);\
+	\cf7 // create overlaps\cf2 \
+	trigger = \cf5 Impulse\cf2 .ar(grainPeriod.reciprocal * 4);\
+	freq = \cf5 TRand\cf2 .ar(grainMinFreq, grainMaxFreq, trigger);\
+	pan = \cf5 TRand\cf2 .ar(-1, 1, trigger) * \cf5 Line\cf2 .kr(1, 0, duration * 0.5);\
+	\cf7 // first argument here is number of outputs. \cf2 \
+	grains = \cf5 GrainFM\cf2 .ar(2, trigger, grainPeriod, freq, freq * 0.77, \cf5 LFNoise1\cf2 .kr.range(4, 10),\
+		pan, envbuf, mul: grainAmp);\
+	\cf5 Out\cf2 .ar(0, grains * env);\
+	\});\
+	\
+\
+thisnote = note.note(1.0, 20.0).duration_(20.0).grainPeriod_(0.1)\
+	.grainMinFreq_(\cf5 CtkControl\cf2 .env(\cf5 Env\cf2 ([400, 500, 400], [0.5, 0.5], \cf6 \\exp\cf2 ), timeScale: 20))\
+	.grainMaxFreq_(\cf5 CtkControl\cf2 .env(\cf5 Env\cf2 ([900, 500, 900], [0.5, 0.5], \cf6 \\exp\cf2 ), timeScale: 20))\
+	.grainAmp_(-12.dbamp);\
+\
+\cf7 // also - you can schedule parameter changes!\cf2 \
+\cf7 // give the change, followed by the time AFTER the note starts that you want the change to happen\cf2 \
+thisnote.envbuf_(buffer, 10);\
+thisnote.envbuf_(-1, 15);\
+\
+score.add(thisnote);\
+score.play;\
+)\
+}

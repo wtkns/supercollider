@@ -1,0 +1,31 @@
+TITLE:: Mesh
+summary:: A stack of Mesh environments and associated networking components.
+categories:: Mesh, Live Coding
+related:: Guides/Mesh, Classes/Mesh, Classes/MeshHostManager, Classes/Meshall, Classes/MeshHost, Classes/MeshHostAddr, Guides/OSC_Communication
+
+DESCRIPTION::
+Mesh allows decentralised automatic discovery of other participants in a Utopia based network music application. It does this by broadcasting a 'hailing signal' consisting of a specified OSC path ('/hail' by default). It automatically adds and informs new Peers, and tracks online status, marking unresponsive Peers as offline.
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new Hail.
+
+ARGUMENT:: name
+a required name, aceepts a Symbol, or will convert a string into a symbol
+
+returns:: A new Mesh instance, and adds the mesh to the Mesh list.
+
+
+INSTANCEMETHODS::
+
+METHOD:: free
+Free this object and its link::Classes/OSCFunc::s. After this, this Hail (and probably its AddrBook) should not be used.
+
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

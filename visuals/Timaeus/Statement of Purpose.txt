@@ -1,0 +1,62 @@
+James Watkins
+DX Arts 461a final
+
+Statement of Purpose:
+
+My primary interest is in composing relationships between organically evolving sonic structures. My goal is to create a simulated environment that can be navigated by the participant, where autonomous sonic objects exist in the dimensions of 2 dimensional space and time, and where exploration through observation and interaction is tangible and affects formal aspects of the piece.
+
+My midterm work was an initial sketch representing evolving sound objects moving in a 2d matrix. For the final I will be:
+
+	•	refactoring the structure of that algorithm to encapsulate the sound objects as finite state automata, exploring the state and strategy OO design patterns to better manage the object’s sonic and behavioral properties.
+	•	Adding new sound objects and behavior strategies.
+	•	Encapsulating the acoustic space (to enable overall sonic treatments, ie. reverb,  equalization, filtering)
+	•	Improving object creation, tracking, and spatialization
+	•	Investigating new algorithms to improve the geometrical modeling for more complex movements and behaviors, using points, angles, and better math
+	•	Configuring the system so that multiple output channels are possible, and tracking the “location” of those output channels over time
+	•	Algorithmically simulate possible traversals of the space by moving the output channels
+
+Architecture Outline for the compositional framework:
+
+	•	Conductor (Demiurge)
+	•	Starts and stops server
+	•	Creates and destroys objects
+	•	Manages memory
+	•	Tracks time
+	•	Polls Space
+	•	Creates and Manages output channels
+	•	Space (Khora)
+	•	X,Y,Z domain bounds
+	•	Global DSP properties
+	•	Sound Objects
+	•	Properties
+	•	Location
+	•	Velocity (speed/direction)
+	•	Sound Parameter
+	•	Strategy
+	•	Sound Parameters (abstract State)
+	•	CTK SynthDef
+	•	Global amplitude
+	•	Bus out
+	•	Instruments (concrete States)
+	•	Risset Bell
+	•	FM Drone
+	•	Percussion grains
+	•	Formant generator
+	•	Behavior (abstract Strategies) 
+	•	Collision
+	•	Wall
+	•	Sound objects
+	•	Output Channels
+	•	Movement
+	•	Strategy (concrete Strategy)
+	•	Attraction
+	•	Repulsion
+	•	Phrase
+	•	Split
+	•	Mutate
+	•	Output Channels Properties
+	•	Location
+	•	Velocity (speed/direction)
+
+
+

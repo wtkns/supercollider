@@ -1,0 +1,20 @@
+C-c C-l		sclang-recompile
+C-c C-o		sclang-start
+C-M-x		sclang-eval-defun
+
+C-c C-r		sclang-main-run
+C-c C-s		sclang-main-stop
+
+
+C-c h		sclang-find-help-in-gui
+C-M-h		sclang-goto-help-browser
+C-c C-y		sclang-open-help-gui
+
+
+C-c :		sclang-find-definitions
+C-c ;		sclang-find-references
+
+C-S-SPC  sp-select-next-thing-exchange
+
+C-c C-d		sclang-eval-region
+C-c >           show-post-buffer

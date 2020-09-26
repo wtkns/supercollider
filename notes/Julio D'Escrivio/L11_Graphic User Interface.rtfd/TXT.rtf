@@ -1,0 +1,534 @@
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fnil\fcharset77 Futura-Medium;\f1\fswiss\fcharset77 Helvetica;\f2\fswiss\fcharset77 ArialMT;
+}
+{\colortbl;\red255\green255\blue255;\red252\green34\blue0;\red0\green0\blue191;\red190\green75\blue107;
+\red255\green137\blue107;\red0\green255\blue0;\red128\green0\blue128;\red255\green128\blue0;\red58\green179\blue255;
+\red27\green190\blue12;\red96\green96\blue96;\red191\green0\blue0;\red0\green115\blue0;\red255\green0\blue0;
+\red128\green0\blue255;\red0\green0\blue255;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc0\levelnfcn0\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}.}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listlevel\levelnfc0\levelnfcn0\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{decimal\}.}{\leveltext\leveltemplateid1\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid1}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs28 \cf0 Anglia Ruskin University\
+Creative Music Technology\
+Tutor: Julio d'Escriv\'87n\
+j.d'escrivan@anglia.ac.uk\
+01223 363271 ext 2978\
+\
+Sound and Synthesis\
+MUB2004\
+Week 12\
+Lesson 11  \
+\
+\
+In Class we will have covered the following topics: User interfaces, windows, buttons and sliders.\
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\fs24 \cf2 CAVEAT\
+The following tutorial is only meant as an accompaniment to the class delivered by the tutor as part of the course in basic sound and synthesis, MUB2004 delivered at Anglia Ruskin University, Cambridge. It can still be of help to people who are not taking the course, but it may not serve as a standalone tutorial to supercollider if you are using it on its own. On the other hand if you have initiative and you use the other supercollider tutorials available on the net, this can be a good starter into Sound and Synthesis for newbies. It tries not to presuppose any computer programming experience. It often explains the seemingly obvious (to advanced users). If you are a newbie and not afraid to admit it, then WELCOME I wrote this for us ;)\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\fs48 \cf3 \
+Th\cf4 E\cf3   G\cf5 r\cf3 a\cf6 p\cf3 h\cf0 i\cf7 C\cf3  Us\cf8 E\cf3 r Int\cf9 e\cf3 rf\cf10 aC\cf3 e.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\fs28 \cf0 We have left this lesson for the end because it is meant to prepare you for the next module rather than this one, but still if you get the hang of it, you may be able to use it for the synthdefs you have made in the last couple of weeks. A graphic user interface is the collection of graphic elements, i.e. windows, buttons, sliders, that a user can use to get the software to work. The transport bar in your favourite music sequencer is no more than a window with a bunch of buttons that hide some code, not unlike you have been writing this semester. Of course, the Graphic user interface is not essential for synthesis, but when it comes time to share our synthdefs, it is easier for other users if all they see are buttons and sliders as opposed to lines of codes... now, everybody uses the word 'interface' but few people actually know what it really means. Let's consult the trusty dictionary.com:\
+\
+\
+\pard\pardeftab720\ql\qnatural
+\cf0 in\'e1ter\'e1face \'ca\'ca\'ca(
+\f1\fs24 {{\NeXTGraphic ibreve.gif \width140 \height300
+}¬}
+\f0\fs28 n
+\f1\fs24 {{\NeXTGraphic prime.gif \width80 \height440
+}¬}
+\f0\fs28 t
+\f1\fs24 {{\NeXTGraphic schwa.gif \width120 \height300
+}¬}
+\f0\fs28 r-f
+\f1\fs24 {{\NeXTGraphic amacr.gif \width140 \height300
+}¬}
+\f0\fs28 s
+\f1\fs24 {{\NeXTGraphic lprime.gif \width60 \height440
+}¬}
+\f0\fs28 )\
+n.\
+\pard\tx220\tx720\pardeftab720\li720\fi-720\ql\qnatural
+\ls1\ilvl0\cf0 {\listtext	1.	}A surface forming a common boundary between adjacent regions, bodies, substances, or phases.\
+{\listtext	2.	}A point at which independent systems or diverse groups interact: \'d2the interface between crime and politics where much of our reality is to be found\'d3 (Jack Kroll).\
+{\listtext	3.	}Computer Science.\
+\pard\tx940\tx1440\pardeftab720\li1440\fi-1440\ql\qnatural
+\ls1\ilvl1\cf0 {\listtext	1.	}The point of interaction or communication between a computer and any other entity, such as a printer or human operator.\
+{\listtext	2.	}The layout of an application's graphic or textual controls in conjunction with the way the application responds to user activity: an interface whose icons were hard to remember.\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf0 \
+\pard\pardeftab720\ql\qnatural
+\cf0 Usage Note: The noun interface has been around since the 1880s, meaning \'d2a surface forming a common boundary, as between bodies or regions.\'d3 But the word did not really take off until the 1960s, when it began to be used in the computer industry to designate the point of interaction between a computer and another system, such as a printer. The word was applied to other interactions as well
+\f1\fs24 {{\NeXTGraphic mdash.gif \width340 \height440
+}¬}
+\f0\fs28 between departments in an organization, for example, or between fields of study. Shortly thereafter interface developed a use as a verb, but it never really caught on outside its niche in the computer world, where it still thrives. The Usage Panel has been unable to muster much enthusiasm for the verb. Thirty-seven percent of Panelists accept it when it designates the interaction between people in the sentence The managing editor must interface with a variety of freelance editors and proofreaders. But the percentage drops to 22 when the interaction is between a corporation and the public or between various communities in a city. Many Panelists complain that interface is pretentious and jargony. Certainly, it has no shortage of acceptable synonyms; cooperate, deal, exchange information, interact, and work present themselves as ready substitutes.\
+\
+\
+Now, a way to remember all this would be to consider the word 'fascia' which could be the latin word on which 'interface' is built. Fascia means 'band' or 'bandage', something that connects something to something else !\
+\
+So there we have it a user interface connects the user, with our software code. It creates a 'face' for our code. It is like looking at a handsome person and seeing their face, but not the frontal lobe of their brain !!!\
+\
+Ok, by now I think you probably understand this word, interface.  :)\
+\
+You may be thinking that was excessive but someday you will thank me for taking the time, heh.\
+\
+\
+So... how does this happen in supercollider? We need a 'face' to put in front of our codes for other users. From our computing experience we know windows, buttons and sliders. Lets have a look at them.\
+\
+\
+\
+\
+\pard\pardeftab720\ql\qnatural
+
+\fs36 \cf0 Windows:\
+\pard\pardeftab720\ql\qnatural
+
+\fs28 \cf0 \
+This is the command to make a window and bring it to the 'front' by displaying it (there is no 'back' actually, the method 'front' makes it appear as well as bring it to the front of other windows:\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf3 SCWindow\cf0 (\cf11 "my first window"\cf0 , \cf3 Rect\cf0 (100, 800, 400, 450)).front;\
+\
+let's break it down:\
+\
+'SCWindow'  is the class from which windows are made. The first thing we can do is give it a title, that goes in inverted commas: \cf11 "my first window".\cf0  Then we create a rectangle with four indications: \
+\
+-distance in pixels from the left side of the screen (in this case 100 pixels);\
+-distance in pixels from the bottom of the screen (in this case 800 pixels);\
+-width of the window (in this case 400 pixels)\
+-Height of the window (in this case 450 pixels)\
+\
+(by the way, a pixel is the smallest dot your computer screen can make for you to see)\
+\
+... and then we make it visible \
+There are other arguments you can give it, but for now that's enough, except that I like this one, it is called alpha and between 0 and 1 you can give a degree of transparency, watch:\
+\
+\cf3 SCWindow\cf0 (\cf11 "my first window"\cf0 , \cf3 Rect\cf0 (100, 800, 400, 450)).front.alpha_(0.1)\
+\
+\
+I just think that's cool ! you don't have to use it but maybe you will?\
+\
+anyway the simplest thing we can do is make a window and bring it to the front\
+\
+\cf3 SCWindow\cf0 (\cf11 "my first window"\cf0 , \cf3 Rect\cf0 (100, 800, 400, 450)).front;\
+\
+Now, you could just spend a few minutes making windows and placing them in different places on the screen to get a feel for them, after that, we can look at buttons !\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\fs36 \cf0 Buttons\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\fs28 \cf0 Buttons are any boxes that when you click on them with the mouse, something happens, this something is what we will call the 'action'. Also the button changes its appearance to show it has been clicked (or 'pressed'), this change we will call the 'state'.\
+\
+What we would like to do now is to put a button in a window and use it for something to see how it works. SCButton is the object we want. This is our task:\
+\
+1. to create a window in which to place our button.\
+2. to create a button inside that window.\
+3. to define for the button a number of states (on, off for example, or a series of toggles).\
+4. to define for each state an action to be done\
+\
+here it goes then:\
+\
+(  \cf12 //double click here\
+\cf3 var\cf0  myWindow, myButton;\
+myWindow = \cf3 SCWindow\cf0 .new; \cf12 // make the window and assign it to a handy variable we can use later\cf0 \
+myWindow.front;  \cf12 // bring the window into existence  (the 'front')\cf0 \
+\
+myButton = \cf3 SCButton\cf0 (myWindow, \cf3 Rect\cf0 (20,20,340,30) ); \cf12 // create the button with the dimensions of Rect\cf0 \
+\
+myButton.states = [ 			\cf12 //we assign some states to the button							\cf0 \
+			[\cf11 "go on... click here"\cf0 , \cf3 Color\cf0 .white, \cf3 Color\cf0 .black], \cf12 // the name, font color, background color\cf0 \
+			[\cf11 "oooops !!!"\cf0 , \cf3 Color\cf0 .red, \cf3 Color\cf0 .yellow], \
+			[\cf11 "this computer will autodestroy in 5 secs"\cf0 , \cf3 Color\cf0 .blue, \cf3 Color\cf0 .red]\
+\
+		  ];\
+\
+myButton.action = \{ \cf3 arg\cf0  hal; hal.value.postln;\}; \cf12 // every time you click, show what value is being sent.\cf0 \
+)	\
+\
+\
+ok, let's do something more useful...  ;)\
+\
+How about just playing a sinewave?  heh.\
+\
+\
+first we need to make a SynthDef and send it to the internal server:\
+\
+\
+\cf3 SynthDef\cf0 .new(\cf13 \\sinus\cf0 , \{ \cf3 Out\cf0 .ar(0, \cf3 SinOsc\cf0 .ar(261));\} ).send(\cf3 Server\cf0 .internal);\
+\
+then we test it to see that it works:\
+\
+x = \cf3 Synth\cf0 (\cf13 \\sinus\cf0 );  \cf12 // assign it to a variable\cf0 \
+\
+x.free;  \cf12 // so we can send the message 'free' to switch it off !\cf0 \
+\
+\
+ok, let's re-use some of our button making code:\
+\
+but first let's make sure the Internal server is the default server:\
+\
+\pard\pardeftab720\ql\qnatural
+\cf0 Server.default = s = Server.internal.boot;\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf0 \
+\
+\
+(  \cf12 //double click here, I'm going to give meaningful names to the variables so this code almost looks like real english !!!\cf0 \
+\
+\cf3 var\cf0   resultingSound, myWindow, myButton;  \cf12 // we will use this below !\cf0 \
+myWindow = \cf3 SCWindow\cf0 .new; \cf12 // make the window and assign it to a handy variable we can use later\cf0 \
+myWindow.front;  \cf12 // bring the window into existence  (the 'front')\cf0 \
+\
+myButton = \cf3 SCButton\cf0 (myWindow, \cf3 Rect\cf0 (20,20,340,30) ); \cf12 // create the button with the dimensions of Rect\cf0 \
+\
+myButton.states = [ 	\cf12 //we assign some states to the button, when you click on each state you cycle through the numebrs 0,1,2, etc according to how many states you define.							\cf0 \
+			[\cf11 "load the Synth"\cf0 , \cf3 Color\cf0 .white, \cf3 Color\cf0 .black], \cf12 // state 0, name, font color, backg. color\cf0 \
+			[\cf11 "make it play"\cf0 , \cf3 Color\cf0 .red, \cf3 Color\cf0 .yellow], \cf12 //state 1\cf0 \
+			[\cf11 "switch it off"\cf0 , \cf3 Color\cf0 .blue, \cf3 Color\cf0 .red] \cf12 // state 2\cf0 \
+\
+		  ];\
+\
+myButton.action = \{ \cf3 var\cf0  buttonState, mySynth ;   \cf12 //we assign some actions to each state of the button\cf0 \
+                  \
+                  mySynth = \cf3 SynthDef\cf0 .new(\cf13 \\sinus\cf0 , \{ \cf3 Out\cf0 .ar(0, \cf3 SinOsc\cf0 .ar(261));\} ); \cf12 //put the synthdef in a variable\cf0 \
+                 \
+                  buttonState = myButton.value.postln; \cf12 // we are assigning here the value sent by the button\cf0 \
+                 \
+                  case   \cf12 //an explanation of this will follow below !\cf0 \
+                  \{ buttonState == 1 \}  \{ mySynth.send(\cf3 Server\cf0 .internal) \}  \cf12 // send the Synthdef when the state sent is 1\cf0 \
+                  \{ buttonState == 2 \}  \{ resultingSound = \cf3 Synth\cf0 (\cf13 \\sinus\cf0 ).postln \} \cf12 // play it when the state sent is 2\cf0 \
+                  \{ buttonState == 0 \}  \{ resultingSound.free \};  \cf12 // switch it off when the state sent is 0\cf0 \
+		    \};\
+)		     \
+		     \
+\
+The only thing I had not explained to you in the exampe above is the object called 'case'. I used it because it closely resembles the way we assign states to the button, and to show you that a button can have more than one state... because, no doubt, most of the buttons we encounter are on/off switches.\
+\
+Also notice that when the window comes up, the button is already in 'state 0', so clicking it will take you to 'state 1' and therefore send the value '1', clicking it again will take you to 'state 2' and send '2', then again to state 0 and send '0', then 1, then 2, then 0, then 1 and so on.\
+\
+I'll show you how the object 'case' works, although maybe you can understand it intuitively just by looking at the example above...\
+\
+'case' tells supercollider that you are about to propose a few options of things to be done if something is true. It takes this form:\
+\
+case\
+\{something no.1\}  \{do \cf3 this\cf0  if something no. 1 is \cf3 true\cf0 \}\
+\{something no.2\}  \{do \cf3 this\cf0  if something no. 2 is \cf3 true\cf0 \}\
+\{something no.3\}  \{do \cf3 this\cf0  if something no. 3 is \cf3 true\cf0 \};\
+// notice the syntax: no commas anywhere, just a ';' at the end !!\
+\
+Whenever 'case' is visited it makes a choice. Above we used button states and we made them coincide with some actions so that when the button said:\
+\
+\cf11 "load the Synth"  \cf0 , clicking it would send the value '1'  (this is because when you first make the button appear, it is already in state '0' and  it comes ready to change to state 1. When you click you get the value of the state that's coming up !! )\
+\
+\
+\cf11 "make it play"  \cf0 , clicking it would send the value '2' \
+\
+\cf11 "switch it off"  \cf0 , clicking it would send the value '0'  (because we only have three states, 0,1, 2 and we started at 1 and we are cycling around !)\
+\
+Anyway, before you go on, I suggest you try and do this from scratch a few times, you won't really understand it till you have tried it and made a few mistakes... use a simple SynthDef like the one I used, but with a different ugen just for fun !\
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\fs36 \cf0 Sliders\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+
+\fs28 \cf0 Sliders are good because we can send continuous values, like the volume of a sound (amplitude) or the frequency... They are programmed in a similar way as buttons, but the have no 'states', they send a value between 0 and 1 every time you slide them up or down, so you will have to scale this number to adapt to the different things you may want to send with it. Let's have a look:\
+\
+\
+\
+(  \cf12 //double click here\
+\cf3 var\cf0  myWindow, mySlider;\
+myWindow = \cf3 SCWindow\cf0 .new; \cf12 // make the window and assign it to a handy variable we can use later\cf0 \
+myWindow.front;  \cf12 // bring the window into existence  (the 'front')\cf0 \
+\
+mySlider = \cf3 SCSlider\cf0 (myWindow, \cf3 Rect\cf0 (20,20,340,30) ); \cf12 // create the slider with the dimensions of Rect\
+\cf0 )\
+\
+\
+ok, now for some action  ;)\
+\
+(  \cf12 //double click here\cf0 \
+\cf3 var\cf0  myWindow, mySlider;\
+myWindow = \cf3 SCWindow\cf0 .new; \cf12 // make the window and assign it to a handy variable we can use later\cf0 \
+myWindow.front;  \cf12 // bring the window into existence  (the 'front')\cf0 \
+\
+mySlider = \cf3 SCSlider\cf0 (myWindow, \cf3 Rect\cf0 (20,20,340,30) ); \cf12 // create the slider with the dimensions of Rect\cf0 \
+\
+mySlider.action =\{\
+				mySlider.value.postln;   \cf12 //this will just post the value of the slider for you to see\cf0 \
+				\};\
+				)\
+\
+\
+As you can see, we get values between 0 and 1. If we wanted to send out frequency values, we would need to scale it to produce numbers between 0 and 20.000... let's do it:\
+\
+(  \cf12 //double click here\cf0 \
+\cf3 var\cf0  myWindow, mySlider;\
+myWindow = \cf3 SCWindow\cf0 .new; \cf12 // make the window and assign it to a handy variable we can use later\cf0 \
+myWindow.front;  \cf12 // bring the window into existence  (the 'front')\cf0 \
+\
+mySlider = \cf3 SCSlider\cf0 (myWindow, \cf3 Rect\cf0 (20,20,340,30) ); \cf12 // create the slider with the dimensions of Rect\cf0 \
+\
+mySlider.action =\{\
+				(mySlider.value*20000).postln;   \cf12 //this will just post the value of the slider for you to see\cf0 \
+				\};\
+				)\
+\
+\
+ok, so before we can use the slider with our synth, we need to make it so that our synth's frequency can change, so let's modify the synthdef:\
+\
+\
+\
+\cf3 SynthDef\cf0 .new(\cf13 \\sinus\cf0 , \{ arg myFreq = 0; \cf3 Out\cf0 .ar(0, \cf3 SinOsc\cf0 .ar(myFreq));\} ).send(\cf3 Server\cf0 .internal);\
+\
+then we test it to see that it works:\
+\
+\cf3 Synth\cf0 (\cf13 \\sinus\cf0 , [\cf11 "myFreq"\cf0  , 261]);  \cf12 // assign the value 261 to the argument 'myFreq'\
+\
+\cf0 ok, so presumably if I now sent slider values to myFreq I would be able to change it, right? These values should be between 0 and 20000. (well between 20 and 20000 but I don't want to show you that in case you would like to solve the offset thing yourself... see below !)\
+\
+let's re-use the code\
+\
+Server.internal = s = Server.default;\
+\
+\
+\
+(  \cf12 //double click here\
+\
+\cf0 \
+\cf3 var\cf0  myWindow, mySlider, mySynth, resultingSound ;  \
+\
+\cf3 Server\cf0 .internal = s = \cf3 Server\cf0 .default;  \cf12 //make sure the internal server si the default to ehare the synthdef will go, see below...\cf0 \
+\
+myWindow = \cf3 SCWindow\cf0 .new; \cf12 // make the window and assign it to a handy variable we can use later\cf0 \
+\
+myWindow.front;  \cf12 // bring the window into existence  (the 'front')\cf0 \
+\
+mySlider = \cf3 SCSlider\cf0 (myWindow, \cf3 Rect\cf0 (20,20,340,30) ); \cf12 // create the slider with the dimensions of Rect\cf0 \
+\
+mySynth = \cf3 SynthDef\cf0 .new(\cf13 \\sinus\cf0 , \{ \cf3 arg\cf0  myFreq = 0; \cf3 Out\cf0 .ar(0, \cf3 SinOsc\cf0 .ar(myFreq));\} ).send(\cf3 Server\cf0 .internal); \cf12 //send my new SynthDef to the internal server.\cf0 \
+\
+resultingSound = \cf3 Synth\cf0 (\cf13 \\sinus\cf0 );  \cf12 // make an instance of the synth, but with no frequeny value...\cf0 \
+\
+mySlider.action = \{\cf3 var\cf0  sliderValue;\
+				sliderValue = (mySlider.value*20000);   \cf12 //this will just post the value of the slider for you to see\cf0 \
+				resultingSound.set(\cf11 "myFreq"\cf0  , sliderValue);  \cf12 //the method set passess the values to the synth\cf0 \
+				\};\
+)\
+\
+the sound is a bit rough and we get 'zipper' noise, but you can see how making a slider works... ok, let's integrate buttons and sliders ...\
+\
+This is what we will do:\
+\
+1. make a window\
+2. make a button in that window\
+3. assign the button states and actiond\
+4. make a slider in the window\
+5. assign the slider action\
+6. run the patch as a whole.\
+\
+This should be easy as we have done all the work already ! All we have to do is copy and paste the code and change a few details:\
+\
+\
+( \cf12 //double click here, notice that we reused everything, put our variables at the top if they are common, like myWindow and then used the last synthdef  we made that allowed us to change freqency...\cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf12 //declare variables that are used throughout\cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf3 var\cf0   resultingSound, myWindow, myButton, mySlider, mySynth; \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf12 \
+// just in case, make the server a default\cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf3 Server\cf0 .internal = s = \cf3 Server\cf0 .default; \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf12 //make the window\cf0 \
+myWindow = \cf3 SCWindow\cf0 .new; \cf12 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf0 myWindow.front;  \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf12 //make the synth\cf0 \
+mySynth = \cf3 SynthDef\cf0 .new(\cf13 \\sinus\cf0 , \{ \cf3 arg\cf0  myFreq = 0; \cf3 Out\cf0 .ar(0, \cf3 SinOsc\cf0 .ar(myFreq));\} );  \
+\
+\cf12 //make the button, states and actions.\cf0 \
+myButton = \cf3 SCButton\cf0 (myWindow, \cf3 Rect\cf0 (20,20,340,30) ); \cf12 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf0 myButton.states = [ 	\cf12 							\cf0 \
+			[\cf11 "load the Synth"\cf0 , \cf3 Color\cf0 .white, \cf3 Color\cf0 .black], 			[\cf11 "make it play"\cf0 , \cf3 Color\cf0 .red, \cf3 Color\cf0 .yellow], \
+			[\cf11 "switch it off"\cf0 , \cf3 Color\cf0 .blue, \cf3 Color\cf0 .red] \
+				 ];\
+myButton.action = \{ \cf3 var\cf0  buttonState ;   \cf12 \
+\cf0                                           \
+                  buttonState = myButton.value.postln; \cf12 \
+\cf0                   case   \
+                  \{ buttonState == 1 \}  \{ mySynth.send(\cf3 Server\cf0 .internal) \}  \cf12 \
+                 \cf0  \{ buttonState == 2 \}  \{ resultingSound = \cf3 Synth\cf0 (\cf13 \\sinus\cf0 ).postln \} \cf12 \
+                  \cf0 \{ buttonState == 0 \}  \{ resultingSound.free \};  		    \};\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf12 //make the slider, be sure to put it lower down in the window, notice the values in Rect !!\cf0 \
+mySlider = \cf3 SCSlider\cf0 (myWindow, \cf3 Rect\cf0 (20,100,340,30) ); \
+\
+mySlider.action = \{\cf3 var\cf0  sliderValue;\
+				sliderValue = (mySlider.value*20000);   				resultingSound.set(\cf11 "myFreq"\cf0  , sliderValue); 				\};\
+)\
+\
+ok, now for the 
+\fs72 \cf14 c\cf9 o\cf0 s\cf9 m\cf8 e\cf9 ti\cf15 c
+\fs28 \cf0  section:\
+\
+- to give the window a background colour, we use an instruction like this: \
+myWindow.view.background=\cf3 Color\cf0 .blue(alpha:0.3); \
+'alpha' is a transparency value between, yes you guessed it, 0 and 1.\
+\
+- to give the knob of a slider a color, we do this:\
+mySlider.knobColor = \cf3 Color\cf0 .black;\
+\
+-to give a slider's background some color we could use an instruction like this:\
+SCSlider.background_(Color.white)\
+\
+-but far nicer is to give the slider background a 'gradient ' of color... with an instruction like this:\
+SCSlider.background_(Gradient(Color.blue(alpha: 0), Color.blue(alpha: 0.2, \\h,20) ) );\
+\
+-If you want to design your own colors you can do that too... just check out the Color helpfile, you could use this type of command:\
+myWindow.view.background=\cf3 Color\cf0 .new255(0, 197, 205) which is turqouise !!! \
+\
+so I'm now going to paste the window-button-slider demo code above but add these cosmetic instructions included.\
+\
+(  \cf12 // dbl click here ! (well just before the parenthesis, actually !)\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf12 //declare variables that are used throughout\cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf3 var\cf0   resultingSound, myWindow, myButton, mySlider, mySynth; \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf12 \
+// just in case, make the server a default\cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf3 Server\cf0 .internal = s = \cf3 Server\cf0 .default; \
+s.boot;\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf12 //make the window\cf0 \
+myWindow = \cf3 SCWindow\cf0 .new; \cf12 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf0 myWindow.front; \
+myWindow.view.background = \cf3 Color\cf0 .blue(alpha:0.3);      \cf12 //WINDOW BACKGROUND\cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf12 //make the synth\cf0 \
+mySynth = \cf3 SynthDef\cf0 .new(\cf13 \\sinus\cf0 , \{ \cf3 arg\cf0  myFreq = 0; \cf3 Out\cf0 .ar(0, \cf3 SinOsc\cf0 .ar(myFreq));\} );  \
+\
+\cf12 //make the button, states and actions.\cf0 \
+myButton = \cf3 SCButton\cf0 (myWindow, \cf3 Rect\cf0 (20,20,340,30) ); \cf12 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf0 myButton.states = [ 	\cf12 							\cf0 \
+			[\cf11 "load the Synth"\cf0 , \cf3 Color\cf0 .white, \cf3 Color\cf0 .black], 			[\cf11 "make it play"\cf0 , \cf3 Color\cf0 .red, \cf3 Color\cf0 .yellow], \
+			[\cf11 "switch it off"\cf0 , \cf3 Color\cf0 .blue, \cf3 Color\cf0 .red] \
+				 ];\
+myButton.action = \{ \cf3 var\cf0  buttonState ;   \cf12 \
+\cf0                                           \
+                  buttonState = myButton.value.postln; \cf12 \
+\cf0                   case   \
+                  \{ buttonState == 1 \}  \{ mySynth.send(\cf3 Server\cf0 .internal) \}  \cf12 \
+                 \cf0  \{ buttonState == 2 \}  \{ resultingSound = \cf3 Synth\cf0 (\cf13 \\sinus\cf0 ).postln \} \cf12 \
+                  \cf0 \{ buttonState == 0 \}  \{ resultingSound.free \};  		    \};\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf12 //make the slider, be sure to put it lower down in the window, notice the values in Rect !!\cf0 \
+mySlider = \cf3 SCSlider\cf0 (myWindow, \cf3 Rect\cf0 (20,100,340,30) ); \
+mySlider.knobColor = Color.black;  \cf12 //SLIDER KNOB COLOR\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf0 mySlider.background_(\cf3 Gradient\cf0 (\cf3 Color\cf0 .blue(alpha: 0), \cf3 Color\cf0 .blue(alpha: 0.2), \cf13 \\h\cf0 ,20) ) ;\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf12 //SLIDER BACKGROUND COLOR\cf0 \
+mySlider.action = \{\cf3 var\cf0  sliderValue;\
+				sliderValue = (mySlider.value*20000);   				resultingSound.set(\cf11 "myFreq"\cf0  , sliderValue); 				\};\
+)\
+\
+\
+And finally,lets put this whole chunk of code in an application which will produce the GUI window as soon as we double click it. This saves having to find the parenthesis to double click and all that... opening the file gets your GUI upfront (well if you like that sort of thing... many others prefer to look at code directly, but at least you have the option !!)\
+\
+do this:\
+1. open a new blank supercollider page (file !).\
+2. type this as the first line on that page: /*RUN*/\
+3. paste the code we made above.\
+4. save it with a name you like (whatever).\
+5. close the file.\
+\
+\
+Are you ready for your first, almost 'standalone' app?  :)))\
+\
+Open the file you just made (double click it or choose open from SuperCollider>File>Open... )\
+\
+et voil\'88 !!\
+\
+ok...\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\ql\qnatural\pardirnatural
+
+\fs48 \cf3 \ul \ulc14 At the end of this section you should be able to:
+\fs28 \cf0 \ulnone \
+\
+\
+
+\fs36 1. Explain in your own words the following concepts:\
+
+\fs28 Graphic User Interface, Windows, Buttons, Sliders.\
+\
+
+\fs36 2. Create lines of code using the following UGens/objects:\
+
+\fs28 SCWindow, SCButton, SCSlider, Rect, Color.\
+\
+
+\fs36 3. Use the following messages/methods: \
+
+\fs28 states, action, case, set, knobColor, view, background.\
+\
+\pard\pardeftab720\ri-2882\ql\qnatural
+\cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\ql\qnatural
+
+\fs48 \cf16 \ul \ulc16 Do the following practice:
+\fs28 \cf0 \ulnone \
+\
+1. Make a window with a button that has 5 witty states :)\
+1.a (optional) Make a button that returns random text everytime you click it...\
+2. Make a window with a slider that sends midi values for velocity\
+2.a. (optional)  Make a window with a slider that sends values between 20 and 20000 only. Hint: you need to use an offset.\
+3. Make a GUI for a synth of your choice with at least 1 button and 1 slider to control the synth.\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural
+\cf0 \
+\
+\pard\pardeftab720\ql\qnatural
+\cf0 \
+\
+\
+\pard\pardeftab720\ql\qnatural
+
+\f2\fs32 \cf0 \
+\pard\pardeftab720\ql\qnatural
+
+\f0\fs28 \cf0 \
+}

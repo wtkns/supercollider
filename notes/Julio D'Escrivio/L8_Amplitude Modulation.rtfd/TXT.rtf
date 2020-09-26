@@ -1,0 +1,169 @@
+{\rtf1\mac\ansicpg10000\cocoartf824\cocoasubrtf330
+{\fonttbl\f0\fnil\fcharset77 Futura-Medium;\f1\fnil\fcharset77 Monaco;\f2\fswiss\fcharset77 Helvetica;
+}
+{\colortbl;\red255\green255\blue255;\red252\green34\blue0;\red0\green0\blue191;\red191\green0\blue0;
+\red255\green0\blue0;\red0\green0\blue255;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs28 \cf0 Anglia Ruskin University\
+Creative Music Technology\
+Tutor: Julio d'Escriv\'87n\
+j.d'escrivan@anglia.ac.uk\
+01223 363271 ext 2978\
+\
+Sound and Synthesis\
+MUB2004\
+Week 9\
+Lesson 8  \
+\
+\
+In Class we will have covered the following topics:\
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\fs24 \cf2 CAVEAT (a latin word, yes, look it up!)\
+The following tutorial is only meant as an accompaniment to the class delivered by the tutor as part of the course in basic sound and synthesis, MUB2004 delivered at Anglia Ruskin University, Cambridge. It can still be of help to people who are not taking the course, but it may not serve as a standalone tutorial to supercollider if you are using it on its own. On the other hand if you have initiative and you use the other supercollider tutorials available on the net, this can be a good starter into Sound and Synthesis for newbies. It tries not to presuppose any computer programming experience. It often explains the seemingly obvious (to advanced users). If you are a newbie and not afraid to admit it, then WELCOME I wrote this for us ;)\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\fs48 \cf3 \
+\
+\
+Amplitude Modulation Synthesis \
+\
+
+\fs28 \cf0 Amplitude modulation, as you can probably guess, is synthesis that occurs when the amplitude of a soundwave is made to change in some way...\
+Let's try it:\
+\
+\
+\{SinOsc.ar(261, mul: SinOsc.ar(100, mul: 0.5) )\}.scope\
+\
+... and this is what we have done, the first 'boxlet' after MUL is the input to the box, in both cases a sinewave, and the second 'boxlet' is the mul value, \
+so have look and mull it over ! (sorry couldn't resist !! :)\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f1\fs18 \cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f2\fs24 \cf0 {{\NeXTGraphic L8, AM ex 1.jpg \width6045 \height5985
+}¬}\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs28 \cf0 As in FM, the outer (or receiving sine) is the carrier and the inner (or plugged in sine !) is the modulator. Remember how there were many sidebands in FM? well... here only two sidebands come up... one is the sum of the carrier plus the modulator frequencies and the other is the difference between these frequencies...\
+\
+Given the example above, what we hear then is two pitches, one at 261+100  and the other at 261-100...\
+\
+If there are partials in one of the waves (for example if we use a sawtooth), then sidebands will originate for each of those partials:\
+\
+\{\cf3 SinOsc\cf0 .ar(261, mul: \cf3 Saw\cf0 .ar(1000, mul: 0.5) )\}.scope  \cf4 //nasty, hey?\cf0 \
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f2\fs24 \cf0 {{\NeXTGraphic L8 AM ex2.jpg \width5745 \height5985
+}¬}\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf0 \
+\
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs28 \cf0 We Should experiment with AM, it is relatively simple compared with FM but quite effective. There are a lot of effects pedals for electric guitars that use Amplitude Modulation under its cooler alias: Ring Modulation.\
+\
+Let's try it with our voice:  (but first, get those headphones on)\
+\
+\{ \cf3 SinOsc\cf0 .ar([440, 440], mul: \cf3 AudioIn\cf0 .ar(1, 0.1) )\}.scope\
+\
+Sing for a little while and when you're tired, have a look at this: (yellow boxes represent the values that are sent to the system to initialize it, in this case so that In will read from channel 1, as seen in the yellow "Add-boxlet-1")\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f2\fs24 \cf0 {{\NeXTGraphic L8 AM Ring Mod ex3.jpg \width8610 \height11025
+}¬}\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs28 \cf0 \
+\
+\
+On a brief tangent, just remember that in computing, names for things relate to their mathematical roles as opposed to their everyday life usefulness, because the former are more general and thus applicable to more situation. Thus instead of calling an amplifier by the nickname "amp", it is called MUL, because the signal gets multiplied; If we needed to multiply any value other than a signal or for different purposes then the name AMP would be useless, but MUL would still make sense, is that clearer?\
+\
+Back to business, then.  Now try this:  (headphones !)\
+\
+\{ \cf3 SinOsc\cf0 .ar([261, 440], mul: \cf3 AudioIn\cf0 .ar(1, 0.1) )\}.scope\
+\
+Sing along... \
+\
+What is happening here? How many main sidebands are there? (think about what happens when you feed a sawtooth into the sine as explained above, then think about how you have multichannel expansion here...)\
+\
+\
+-make a routine using AM like the one we did for FM\
+\
+\
+\
+Latch\
+select/stepper through modulation values...\
+\
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\ql\qnatural\pardirnatural
+\cf0 \
+\
+\pard\pardeftab720\ri-2882\ql\qnatural
+\cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\ql\qnatural\pardirnatural
+
+\fs48 \cf3 \ul \ulc5 At the end of this section you should be able to:
+\fs28 \cf0 \ulnone \
+\
+\
+
+\fs36 \cf0 1. Explain in your own words the following concepts:
+\fs28 \cf0 \
+AM Synthesis, Ring Modulation,\
+\
+\
+
+\fs36 \cf0 2. Create lines of code using the following UGens/objects:
+\fs28 \cf0 \
+AudioIn\
+\
+\
+\
+\
+
+\fs36 \cf0 3. Use the following messages/methods: 
+\fs28 \cf0 \
+\
+\pard\pardeftab720\ri-2882\ql\qnatural
+\cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\ql\qnatural\pardirnatural
+\cf0 \
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\ql\qnatural
+
+\fs48 \cf6 \ul \ulc6 Do the following practice:
+\fs28 \cf0 \ulnone \
+\
+1. Create an AM patch where the modulator is a Sawtooth wave that gets fed gradually into the sinewave carrier... hint: use line ugen.\
+\
+2. a. Create an AM patch where the modulator is fed in random bursts into the carrier.  hint: use the dust ugen.\
+    b. Create a ring modulation where on one channel the voice is randomly passed into the carrier and on the other, it is amplified straight through. hint: use multichannel expansion for stereo and the dust ugen.\
+    c. Create a ring modulation patch for the voice, with multichannel expansion for stereo, where you can use the mouse to change both carrier frequencies at the same time to different values. hint: use horizontal and vertical mice.\
+    \
+ \
+\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardeftab720\ql\qnatural
+
+\f1\fs24 \cf0 \
+\
+\
+\pard\pardeftab720\ri-2882\ql\qnatural
+
+\f0\fs28 \cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+\cf0 \
+\
+}
