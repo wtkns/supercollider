@@ -1,0 +1,28 @@
+TITLE:: Stigmergy Guide
+categories:: Visualization, Stigmergy
+summary:: Simple framework for stigmergic behaviors
+related:: Guides/OSC_Communication
+
+STRONG::Stigmergy Framework::
+
+simulating stigmergic behaviors
+
+SECTION:: Introduction
+
+Stigmergic manifesto
+
+
+image::image1.png::
+
+SECTION:: Basic Building Blocks
+
+There are two basic parts, Khora (the space) and Anima (an arbitrary number of the objects contained within).
+
+there is also a timeline, contained in the space, and strategies contained in the boids
+
+SECTION:: Creating a Khora
+
+definitionlist::
+     ## Create a Mesh
+     || Call the Mesh class, and give it a name: code::Mesh(\mesh1)::
+::

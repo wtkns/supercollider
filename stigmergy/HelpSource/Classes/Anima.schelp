@@ -1,0 +1,146 @@
+TITLE:: Anima
+summary:: boid for swarm
+categories:: Visualization, Stigmergy
+related:: Classes/Khora, Guides/Stigmergy, etc.
+
+DESCRIPTION::
+(put long description here)
+
+
+CLASSMETHODS::
+
+METHOD:: new
+(describe method here)
+
+ARGUMENT:: xPos
+(describe argument here)
+
+ARGUMENT:: yPos
+(describe argument here)
+
+ARGUMENT:: xVel
+(describe argument here)
+
+ARGUMENT:: yVel
+(describe argument here)
+
+ARGUMENT:: sndParam
+(describe argument here)
+
+ARGUMENT:: strtgy
+(describe argument here)
+
+ARGUMENT:: rhyth
+(describe argument here)
+
+ARGUMENT:: col
+(describe argument here)
+
+ARGUMENT:: sizX
+(describe argument here)
+
+ARGUMENT:: sizY
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: velocity
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: position
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: age
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: strategy
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: size
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: init
+(describe method here)
+
+ARGUMENT:: xPos
+(describe argument here)
+
+ARGUMENT:: yPos
+(describe argument here)
+
+ARGUMENT:: xVel
+(describe argument here)
+
+ARGUMENT:: yVel
+(describe argument here)
+
+ARGUMENT:: sndParam
+(describe argument here)
+
+ARGUMENT:: strtgy
+(describe argument here)
+
+ARGUMENT:: rhyth
+(describe argument here)
+
+ARGUMENT:: col
+(describe argument here)
+
+ARGUMENT:: sizX
+(describe argument here)
+
+ARGUMENT:: sizY
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: move
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: soundParameters
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: rhythm
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: color
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: dump
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: type
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::
+

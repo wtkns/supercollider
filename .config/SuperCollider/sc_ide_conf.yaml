@@ -26,17 +26,20 @@ IDE:
       documents-dock: ""
       help-dock: ""
       post-dock: ""
-    geometry: AdnQywADAAAAAAFoAAAAGwAACGEAAAWfAAABaAAAAEAAAAhhAAAFnwAAAAAAAAAACgAAAAFoAAAAQAAACGEAAAWf
-    state: AAAA/wAAAAD9AAAAAgAAAAAAAADIAAAFK/wCAAAAAfsAAAAcAGQAbwBjAHUAbQBlAG4AdABzAC0AZABvAGMAawAAAAAYAAAFKwAAAGEA////AAAAAQAAAlsAAAUr/AIAAAAC+wAAABIAaABlAGwAcAAtAGQAbwBjAGsAAAAAGAAAAuQAAABPAP////sAAAASAHAAbwBzAHQALQBkAG8AYwBrAQAAABgAAAUrAAAATwD///8AAASeAAAFKwAAAAEAAAACAAAAAQAAAAL8AAAAAA==
+    geometry: AdnQywADAAAAAAoAAAAAGwAADv8AAAWfAAAKAAAAAEAAAA7/AAAFnwAAAAAAAAAACgAAAAoAAAAAQAAADv8AAAWf
+    state: AAAA/wAAAAD9AAAAAgAAAAAAAADIAAAFK/wCAAAAAfsAAAAcAGQAbwBjAHUAbQBlAG4AdABzAC0AZABvAGMAawAAAAAYAAAFKwAAAGUA////AAAAAQAAAoAAAALl/AIAAAAC+wAAABIAaABlAGwAcAAtAGQAbwBjAGsCAAAHgAAAAZAAAAKAAAAC5fsAAAASAHAAbwBzAHQALQBkAG8AYwBrAwAAEGAAAAFHAAABwQAAAXcAAAUAAAAFIgAAAAEAAAACAAAAAQAAAAL8AAAAAA==
   postWindow:
     lineWrap: false
     scrollback: 1000
   recentDocuments: !QVariantList
-    - /home/jms/git/wtkns/research/vfthm/requirements.txt
-    - /home/jms/git/wtkns/research/vfthm/README.md
+    - /home/jms/zeiros-weird-text.txt
     - /home/jms/git/wtkns/supercollider/visuals/tongues/tongues.scd
+    - /home/jms/Downloads/droidcam plugin/droidcam_obs_1.1.1_linux/README-LINUX.txt
+    - /home/jms/git/wtkns/supercollider/sketches/scspaceorgan.scd
     - /home/jms/git/wtkns/supercollider/visuals/tongues/tongues2.scd
-    - /home/jms/git/wtkns/supercollider/visuals/tongues/extensions/Anima.sc
-    - /home/jms/git/wtkns/supercollider/visuals/tongues/extensions/Khora.sc
-    - /home/jms/git/wtkns/supercollider/sketches/quadDrone.scd
+    - /home/jms/git/wtkns/supercollider/.jackdrc
+    - /home/jms/.config/obs-studio/plugins/droidcam-obs/data/locale/en-US.ini
+    - /home/jms/.config/droidcam
+    - /home/jms/Downloads/Cadence-0.8.1/README
+    - /home/jms/original-SZ.txt
   startWithSession: last

@@ -1,3 +1,22 @@
+s.options.memSize_(65536 * 4);
+s.reboot;
+
+{
+    var src = SoundIn.ar(0)!2; // stereo input
+    var rev = Greyhole.ar(
+        src,
+        \dtime.kr(0.1),
+        \damp.kr(0.1),
+        \size.kr(1),
+        \diff.kr(0.707),
+        \fb.kr(0.1),
+        \modDepth.kr(0.01),
+        \modFreq.kr(2)
+    );
+
+    Mix([src, rev]) * 0.1;
+}.play
+
 (
 fork {
 	TempoClock.tempo = 1;

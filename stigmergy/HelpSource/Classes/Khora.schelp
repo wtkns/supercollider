@@ -1,0 +1,57 @@
+TITLE:: Khora
+summary:: container environment for swarm
+categories:: Visualization, Stigmergy
+related:: Classes/Anima, Guides/Stigmergy, etc.
+
+DESCRIPTION::
+(put long description here)
+
+
+CLASSMETHODS::
+
+METHOD:: new
+(describe method here)
+
+ARGUMENT:: xDom
+(describe argument here)
+
+ARGUMENT:: yDom
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: init
+(describe method here)
+
+ARGUMENT:: xDom
+(describe argument here)
+
+ARGUMENT:: yDom
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: dump
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: yDomain
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: xDomain
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+
+code::
+(some example code)
+::

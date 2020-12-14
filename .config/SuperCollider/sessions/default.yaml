@@ -1,16 +1,28 @@
 documents: !QVariantList
-  - /home/jms/git/wtkns/research/vfthm/requirements.txt
+  - /home/jms/git/wtkns/supercollider/visuals/tongues/tongues2.scd
+  - /home/jms/git/wtkns/supercollider/sketches/scspaceorgan.scd
+  - /home/jms/Downloads/droidcam plugin/droidcam_obs_1.1.1_linux/README-LINUX.txt
+  - /home/jms/git/wtkns/supercollider/visuals/tongues/tongues.scd
 editors: !QVariantMap
   elements: !QVariantList
     - !QVariantList
       - !QVariantMap
-        documentIndex: 0
+        documentIndex: 3
         position: 0
+      - !QVariantMap
+        documentIndex: 1
+        position: 42
+      - !QVariantMap
+        documentIndex: 2
+        position: 0
+      - !QVariantMap
+        documentIndex: 0
+        position: 1
   state: AAAA/wAAAAEAAAABAAAAZAH/////AQAAAAEA
 mainWindow:
   detached: !QVariantMap
     documents-dock: ""
     help-dock: ""
     post-dock: ""
-  geometry: AdnQywADAAAAAAFoAAAAGwAACGEAAAWfAAABaAAAAEAAAAhhAAAFnwAAAAAAAAAACgAAAAFoAAAAQAAACGEAAAWf
-  state: AAAA/wAAAAD9AAAAAgAAAAAAAADIAAAFK/wCAAAAAfsAAAAcAGQAbwBjAHUAbQBlAG4AdABzAC0AZABvAGMAawAAAAAYAAAFKwAAAGEA////AAAAAQAAAlsAAAUr/AIAAAAC+wAAABIAaABlAGwAcAAtAGQAbwBjAGsAAAAAGAAAAuQAAABPAP////sAAAASAHAAbwBzAHQALQBkAG8AYwBrAQAAABgAAAUrAAAATwD///8AAASeAAAFKwAAAAEAAAACAAAAAQAAAAL8AAAAAA==
+  geometry: AdnQywADAAAAAAoAAAAAGwAADv8AAAWfAAAKAAAAAEAAAA7/AAAFnwAAAAAAAAAACgAAAAoAAAAAQAAADv8AAAWf
+  state: AAAA/wAAAAD9AAAAAgAAAAAAAADIAAAFK/wCAAAAAfsAAAAcAGQAbwBjAHUAbQBlAG4AdABzAC0AZABvAGMAawAAAAAYAAAFKwAAAGUA////AAAAAQAAAoAAAALl/AIAAAAC+wAAABIAaABlAGwAcAAtAGQAbwBjAGsCAAAHgAAAAZAAAAKAAAAC5fsAAAASAHAAbwBzAHQALQBkAG8AYwBrAwAAEGAAAAFHAAABwQAAAXcAAAUAAAAFIgAAAAEAAAACAAAAAQAAAAL8AAAAAA==

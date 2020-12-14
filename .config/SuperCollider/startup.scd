@@ -1,1 +1,1 @@
-Quarks.addFolder("~/git/wtkns/supercollider");
+Quarks.addFolder("~/git/wtkns/supercollider/visuals/tongues");

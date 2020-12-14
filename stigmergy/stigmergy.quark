@@ -1,0 +1,10 @@
+
+(
+	\name: "Stigmergy",
+	\path: "stigmergy",
+	\summary: "automata for stigmergic behavior",
+	\author: "jmswtkns",
+	\version: 0.1,
+	\since: "2020",
+	\status: "experimental"
+)
